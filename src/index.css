@@ -11,3 +11,15 @@ code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
 }
+
+.avurudu-games-container {
+  min-height: 100vh;
+  position: relative;
+}
+
+.games-background {
+  position: fixed;
+  inset: 0;
+  background: linear-gradient(135deg, #FFF3E0, #FFE5B4, #FFDAB9);
+  z-index: -1;
+}
