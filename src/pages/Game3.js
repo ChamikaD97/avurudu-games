@@ -1,406 +1,622 @@
-import { Card, Button, Progress } from "antd";
-import { useState, useEffect } from "react";
+import { Card, Button } from "antd";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
+import { motion, AnimatePresence } from "framer-motion";
+import { 
+  GiftOutlined, 
+  CheckCircleOutlined,
+  StarOutlined,
+  FireOutlined,
+  BulbOutlined
+} from "@ant-design/icons";
 import lampsImage from "../assets/avurudu-lamps.jpeg";
 import GameEndModal from "../components/GameEndModal";
 
-export default function Game3() {
+// API
+import { submitHiddenLampsGame } from "../api/gameApi";
+
+export default function Game3({ player }) {
   const navigate = useNavigate();
+  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+  const containerRef = useRef(null);
+
   const [showModal, setShowModal] = useState(false);
   const [selected, setSelected] = useState(null);
-  const [timeUp, setTimeUp] = useState(false);
-  const [timeLeft, setTimeLeft] = useState(15);
-
-  const [startClicked, setStartClicked] = useState(false);
-  const [countdown, setCountdown] = useState(3);
-  const [gameStarted, setGameStarted] = useState(false);
+  const [animateIn, setAnimateIn] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [imageHover, setImageHover] = useState(false);
+  const [showHint, setShowHint] = useState(false);
 
   const options = ["3", "4", "5", "6"];
+  const correctAnswer = "4";
+
+  const [startTime, setStartTime] = useState(null);
+
+  // Track mouse for parallax effect
+  useEffect(() => {
+    const handleMouseMove = (e) => {
+      if (containerRef.current) {
+        const rect = containerRef.current.getBoundingClientRect();
+        setMousePosition({
+          x: ((e.clientX - rect.left) / rect.width - 0.5) * 20,
+          y: ((e.clientY - rect.top) / rect.height - 0.5) * 20,
+        });
+      }
+    };
+
+    window.addEventListener('mousemove', handleMouseMove);
+    return () => window.removeEventListener('mousemove', handleMouseMove);
+  }, []);
 
   useEffect(() => {
-    if (!startClicked) return;
+    setTimeout(() => setAnimateIn(true), 80);
+    setStartTime(Date.now());
+  }, []);
 
-    if (countdown === 0) {
-      setGameStarted(true);
-      return;
-    }
-
-    const timer = setTimeout(() => {
-      setCountdown((prev) => prev - 1);
-    }, 1000);
-
-    return () => clearTimeout(timer);
-  }, [countdown, startClicked]);
-
+  // Inject animations
   useEffect(() => {
-    if (!gameStarted) return;
+    const styleId = "game3-festival-animations";
+    if (document.getElementById(styleId)) return;
 
-    if (timeLeft === 0) {
-      setTimeUp(true);
-      setShowModal(true); // 🔥 show modal
-      return;
+    const style = document.createElement("style");
+    style.id = styleId;
+    style.innerHTML = `
+      @keyframes floatIn {
+        0% {
+          opacity: 0;
+          transform: translateY(30px) scale(0.9);
+        }
+        100% {
+          opacity: 1;
+          transform: translateY(0) scale(1);
+        }
+      }
+
+      @keyframes gentleFloat {
+        0%, 100% {
+          transform: translateY(0) rotate(0deg);
+        }
+        25% {
+          transform: translateY(-8px) rotate(2deg);
+        }
+        75% {
+          transform: translateY(8px) rotate(-2deg);
+        }
+      }
+
+      @keyframes pulseGlow {
+        0%, 100% {
+          filter: drop-shadow(0 0 10px rgba(255, 215, 0, 0.3));
+        }
+        50% {
+          filter: drop-shadow(0 0 25px rgba(255, 215, 0, 0.6));
+        }
+      }
+
+      @keyframes spinSlow {
+        from {
+          transform: rotate(0deg);
+        }
+        to {
+          transform: rotate(360deg);
+        }
+      }
+
+      @keyframes flicker {
+        0%, 100% {
+          opacity: 1;
+          transform: scale(1);
+        }
+        25% {
+          opacity: 0.8;
+          transform: scale(0.95);
+        }
+        50% {
+          opacity: 1;
+          transform: scale(1.05);
+        }
+        75% {
+          opacity: 0.9;
+          transform: scale(0.98);
+        }
+      }
+
+      @keyframes shimmer {
+        0% {
+          background-position: -1000px 0;
+        }
+        100% {
+          background-position: 1000px 0;
+        }
+      }
+
+      .game-card {
+        animation: floatIn 0.7s ease forwards;
+      }
+
+      .option-button {
+        transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      }
+
+      .option-button:hover:not(:disabled) {
+        transform: translateY(-3px) scale(1.02);
+        box-shadow: 0 12px 24px rgba(255, 215, 0, 0.3);
+      }
+
+      .floating-element {
+        position: absolute;
+        pointer-events: none;
+        opacity: 0.5;
+        animation: gentleFloat var(--duration) ease-in-out infinite;
+        animation-delay: var(--delay);
+        filter: drop-shadow(0 0 5px rgba(255, 215, 0, 0.3));
+      }
+
+      .image-container {
+        position: relative;
+        overflow: hidden;
+        border-radius: 20px;
+      }
+
+      .image-container::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+        transition: left 0.5s ease;
+      }
+
+      .image-container:hover::after {
+        left: 100%;
+      }
+
+      .pulse-glow {
+        animation: pulseGlow 2s ease-in-out infinite;
+      }
+
+      .flicker {
+        animation: flicker 3s ease-in-out infinite;
+      }
+
+      .lamp-icon {
+        animation: flicker 2s ease-in-out infinite;
+      }
+    `;
+    document.head.appendChild(style);
+  }, []);
+
+  const handleFinish = async () => {
+    if (submitting) return;
+
+    setSubmitting(true);
+
+    const finishTime = Date.now();
+    const timeTaken = ((finishTime - startTime) / 1000).toFixed(2);
+
+    const isCorrect = selected === correctAnswer;
+    const score = isCorrect ? 1 : 0;
+
+    const payload = {
+      name: player?.name || "Guest",
+      phone: player?.phone || "N/A",
+      selectedAnswer: selected,
+      correctAnswer,
+      isCorrect,
+      score,
+      time: timeTaken,
+    };
+
+    try {
+      await submitHiddenLampsGame(payload);
+      localStorage.setItem("game_lamps_done", "true");
+    } catch (err) {
+      console.log("Save failed");
     }
 
-    const interval = setInterval(() => {
-      setTimeLeft((prev) => prev - 1);
-    }, 1000);
-
-    return () => clearInterval(interval);
-  }, [timeLeft, gameStarted, navigate]);
+    setShowModal(true);
+    setSubmitting(false);
+  };
 
   const handleSubmit = () => {
     if (!selected) return;
-    setShowModal(true); // 🔥 show modal when quiz ends
+    handleFinish();
   };
 
-
-  const progressPercent = (timeLeft / 15) * 100;
-
   return (
-<div
-  style={{
-    minHeight: "100vh",
-    background: "linear-gradient(135deg, #fff5e6 0%, #ffe3b3 100%)",
-    padding: "30px 16px",
-
-    display: "flex",
-    justifyContent: "center",   // horizontal center
-    alignItems: "center",       // vertical center
-  }}
->
-      <Card
+    <div
+      ref={containerRef}
+      style={{
+        minHeight: "100vh",
+        background: "radial-gradient(circle at 30% 30%, #FFE4B5, #DEB887, #8B4513)",
+        padding: "30px 16px",
+        opacity: animateIn ? 1 : 0,
+        transition: "all 0.5s ease",
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+        position: "relative",
+        overflow: "hidden",
+      }}
+    >
+      {/* Animated Background Pattern */}
+      <div
         style={{
-          maxWidth: 580,
-          margin: "auto",
-          marginTop: 20,
-          textAlign: "center",
-          borderRadius: 24,
-          background: "rgba(255,255,255,0.96)",
-          boxShadow: "0 18px 45px rgba(139,69,19,0.16)",
-          border: "2px solid #f5d76e",
-          overflow: "hidden",
+          position: "absolute",
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: `
+            repeating-linear-gradient(
+              45deg,
+              rgba(255, 215, 0, 0.05) 0px,
+              rgba(255, 215, 0, 0.05) 20px,
+              rgba(210, 105, 30, 0.05) 20px,
+              rgba(210, 105, 30, 0.05) 40px
+            )
+          `,
+          animation: "spinSlow 60s linear infinite",
+          pointerEvents: "none",
         }}
-        bodyStyle={{ padding: 28 }}
+      />
+
+      {/* Floating Decorative Elements */}
+      <div
+        className="floating-element"
+        style={{
+          top: "10%",
+          left: "5%",
+          fontSize: 48,
+          '--duration': '12s',
+          '--delay': '0s',
+          transform: `translate(${mousePosition.x * 0.3}px, ${mousePosition.y * 0.3}px)`,
+        }}
       >
-        <div
+        🪔
+      </div>
+      <div
+        className="floating-element flicker"
+        style={{
+          top: "80%",
+          right: "5%",
+          fontSize: 36,
+          '--duration': '15s',
+          '--delay': '2s',
+          transform: `translate(${mousePosition.x * 0.5}px, ${mousePosition.y * 0.5}px)`,
+        }}
+      >
+        🏮
+      </div>
+      <div
+        className="floating-element"
+        style={{
+          top: "20%",
+          right: "15%",
+          fontSize: 42,
+          '--duration': '10s',
+          '--delay': '1s',
+          transform: `translate(${mousePosition.x * 0.4}px, ${mousePosition.y * 0.4}px)`,
+        }}
+      >
+        🌸
+      </div>
+      <div
+        className="floating-element flicker"
+        style={{
+          bottom: "15%",
+          left: "10%",
+          fontSize: 40,
+          '--duration': '14s',
+          '--delay': '3s',
+          transform: `translate(${mousePosition.x * 0.6}px, ${mousePosition.y * 0.6}px)`,
+        }}
+      >
+        🕯️
+      </div>
+      <div
+        className="floating-element"
+        style={{
+          top: "30%",
+          right: "25%",
+          fontSize: 32,
+          '--duration': '11s',
+          '--delay': '1.5s',
+          transform: `translate(${mousePosition.x * 0.2}px, ${mousePosition.y * 0.2}px)`,
+        }}
+      >
+        ✨
+      </div>
+
+      {/* Main Card */}
+      <motion.div
+        initial={{ opacity: 0, y: 30 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6 }}
+        style={{
+          width: "100%",
+          maxWidth: 620,
+          position: "relative",
+          zIndex: 10,
+        }}
+      >
+        <Card
+          className="game-card"
           style={{
-            marginBottom: 20,
-            paddingBottom: 14,
-            borderBottom: "2px dashed #f3c96a",
+            borderRadius: 32,
+            background: "rgba(255, 255, 255, 0.97)",
+            backdropFilter: "blur(10px)",
+            boxShadow: "0 30px 60px rgba(139, 69, 19, 0.25)",
+            border: "2px solid #FFD700",
+            overflow: "hidden",
           }}
+          bodyStyle={{ padding: 32 }}
         >
-          <div style={{ fontSize: 40, marginBottom: 6 }}>🏮</div>
-          <h2
-            style={{
-              margin: 0,
-              color: "#8B4513",
-              fontSize: 28,
-              fontWeight: 800,
-            }}
-          >
-            පහන් ගණන හොයමු
-          </h2>
-          <p style={{ margin: "8px 0 0", color: "#7a7a7a", fontSize: 15 }}>
-            Look carefully at the image and choose the correct number of lamps
-          </p>
-        </div>
-
-        {!startClicked && (
+          {/* Decorative Header */}
           <div
             style={{
-              background: "linear-gradient(135deg, #fff8e8, #ffeabf)",
-              border: "1px solid #f5d76e",
-              borderRadius: 18,
-              padding: "24px 20px",
-              marginBottom: 20,
-            }}
-          >
-            <div style={{ fontSize: 54, marginBottom: 10 }}>🎯</div>
-
-            <h3
-              style={{
-                marginBottom: 10,
-                color: "#8B4513",
-                fontSize: 22,
-                fontWeight: 700,
-              }}
-            >
-              Ready to Answer?
-            </h3>
-
-            <p
-              style={{
-                marginBottom: 18,
-                color: "#5f5f5f",
-                lineHeight: 1.7,
-                fontSize: 15,
-              }}
-            >
-              Look carefully at the image and choose the correct number of lamps
-              before the timer ends.
-            </p>
-
-            <Button
-              type="primary"
-              size="large"
-              onClick={() => setStartClicked(true)}
-              style={{
-                height: 50,
-                padding: "0 28px",
-                borderRadius: 14,
-                background: "linear-gradient(135deg, #E44D2E, #F9A826)",
-                border: "none",
-                fontWeight: 700,
-                fontSize: 16,
-                boxShadow: "0 10px 24px rgba(228,77,46,0.25)",
-              }}
-            >
-              Start Game
-            </Button>
-          </div>
-        )}
-
-        {startClicked && !gameStarted && (
-          <div
-            style={{
-              padding: "24px 16px",
-              marginBottom: 20,
+              marginBottom: 24,
+              paddingBottom: 16,
+              borderBottom: "2px dashed #FFD700",
+              position: "relative",
             }}
           >
             <div
               style={{
-                width: 120,
-                height: 120,
-                margin: "0 auto 14px",
+                position: "absolute",
+                top: -10,
+                left: -10,
+                width: 60,
+                height: 60,
+                background: "radial-gradient(circle, rgba(255,215,0,0.2) 0%, transparent 70%)",
                 borderRadius: "50%",
-                background: "linear-gradient(135deg, #E44D2E, #F9A826)",
+                animation: "spinSlow 15s linear infinite",
+              }}
+            />
+            
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 10, marginBottom: 10 }}>
+              <BulbOutlined style={{ color: "#FFD700", fontSize: 24 }} />
+              <span style={{ color: "#8B4513", fontWeight: 600, fontSize: 16 }}>
+                පහන් සෙවීමේ ක්‍රීඩාව
+              </span>
+              <BulbOutlined style={{ color: "#FFD700", fontSize: 24 }} />
+            </div>
+
+            <div
+              className="flicker"
+              style={{
+                fontSize: 60,
+                textAlign: "center",
+                marginBottom: 10,
+              }}
+            >
+              🏮
+            </div>
+
+            <h2
+              style={{
+                margin: "12px 0 8px",
+                color: "#8B4513",
+                fontSize: 28,
+                fontWeight: 800,
+                textAlign: "center",
+                background: "linear-gradient(135deg, #8B4513, #D2691E)",
+                WebkitBackgroundClip: "text",
+                WebkitTextFillColor: "transparent",
+              }}
+            >
+              පහන් ගණන හොයමු
+            </h2>
+
+            <p style={{ textAlign: "center", color: "#7a7a7a", fontSize: 15 }}>
+              රූපය හොඳින් බලලා නිවැරදි පිළිතුර තෝරන්න!
+            </p>
+          </div>
+
+          {/* QUESTION */}
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.2 }}
+            style={{
+              background: "linear-gradient(135deg, #FFF8E7, #FFEBCD)",
+              border: "2px solid #FFD700",
+              borderRadius: 24,
+              padding: "20px 18px",
+              marginBottom: 20,
+            }}
+          >
+            <h3
+              style={{
+                margin: 0,
+                color: "#5c3b14",
+                fontSize: 22,
+                fontWeight: 700,
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
-                color: "#fff",
-                fontSize: 52,
-                fontWeight: 800,
-                boxShadow: "0 12px 30px rgba(228,77,46,0.28)",
+                gap: 10,
               }}
             >
-              {countdown}
-            </div>
+              <FireOutlined style={{ color: "#FFD700" }} />
+              රූපයේ ඇති පහන් ගණන කීයද?
+              <FireOutlined style={{ color: "#FFD700" }} />
+            </h3>
+          </motion.div>
 
-            <h2 style={{ marginBottom: 6, color: "#8B4513" }}>
-              Starting in {countdown}...
-            </h2>
-            <p style={{ color: "#777", margin: 0 }}>
-              Get ready to answer quickly
-            </p>
-          </div>
-        )}
-
-        {gameStarted && (
-          <>
-            <div
+          {/* IMAGE */}
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.3 }}
+            className="image-container"
+            style={{
+              background: "linear-gradient(135deg, #FFF8E7, #FFE4B5)",
+              border: "3px solid #FFD700",
+              borderRadius: 24,
+              padding: 12,
+              marginBottom: 24,
+              boxShadow: "0 15px 30px rgba(0,0,0,0.1)",
+            }}
+            onMouseEnter={() => setImageHover(true)}
+            onMouseLeave={() => setImageHover(false)}
+          >
+            <img
+              src={lampsImage}
+              alt="lamps"
               style={{
-                display: "flex",
-                justifyContent: "center",
-                gap: 12,
-                flexWrap: "wrap",
-                marginBottom: 20,
+                width: "100%",
+                borderRadius: 16,
+                transform: imageHover ? "scale(1.05)" : "scale(1)",
+                transition: "all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)",
+                boxShadow: imageHover ? "0 20px 40px rgba(139,69,19,0.3)" : "none",
               }}
-            >
-              <div
+            />
+            
+         
+            
+            
+          </motion.div>
+
+          {/* Hint Message */}
+          <AnimatePresence>
+            {showHint && (
+              <motion.div
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
                 style={{
-                  flex: 1,
-                  minWidth: 150,
-                  background: "linear-gradient(135deg, #fff7df, #ffe9b3)",
-                  border: "1px solid #f4cf69",
-                  borderRadius: 16,
-                  padding: "14px 18px",
-                  boxShadow: "0 8px 20px rgba(0,0,0,0.06)",
-                }}
-              >
-                <div
-                  style={{
-                    fontSize: 13,
-                    color: "#8B4513",
-                    fontWeight: 700,
-                    marginBottom: 6,
-                    textTransform: "uppercase",
-                    letterSpacing: 1,
-                  }}
-                >
-                  Time Left
-                </div>
-
-                <div
-                  style={{
-                    fontSize: 30,
-                    fontWeight: 800,
-                    color: timeLeft <= 2 ? "#E44D2E" : "#d48806",
-                  }}
-                >
-                  {timeLeft}s
-                </div>
-              </div>
-
-              <div
-                style={{
-                  flex: 1,
-                  minWidth: 150,
-                  background: "linear-gradient(135deg, #eefcf1, #d6f7dc)",
-                  border: "1px solid #95de64",
-                  borderRadius: 16,
-                  padding: "14px 18px",
-                  boxShadow: "0 8px 20px rgba(0,0,0,0.06)",
-                }}
-              >
-                <div
-                  style={{
-                    fontSize: 13,
-                    color: "#2f6b2f",
-                    fontWeight: 700,
-                    marginBottom: 6,
-                    textTransform: "uppercase",
-                    letterSpacing: 1,
-                  }}
-                >
-                  Question
-                </div>
-
-                <div
-                  style={{
-                    fontSize: 28,
-                    fontWeight: 800,
-                    color: "#1f7a1f",
-                  }}
-                >
-                  1/1
-                </div>
-              </div>
-            </div>
-
-            <div
-              style={{
-                marginBottom: 22,
-                background: "#fffaf0",
-                borderRadius: 14,
-                padding: "14px 16px",
-                border: "1px solid #f3e2b2",
-              }}
-            >
-              <Progress
-                percent={progressPercent}
-                showInfo={false}
-                strokeColor={timeLeft <= 2 ? "#ff4d4f" : "#52c41a"}
-                trailColor="#f0e6c8"
-              />
-            </div>
-
-            <div
-              style={{
-                background: "linear-gradient(135deg, #fff8e8, #ffeabf)",
-                border: "1px solid #f5d76e",
-                borderRadius: 18,
-                padding: "20px 18px",
-                marginBottom: 20,
-              }}
-            >
-              <div
-                style={{
-                  fontSize: 13,
+                  background: "rgba(255, 215, 0, 0.1)",
+                  border: "1px solid #FFD700",
+                  borderRadius: 30,
+                  padding: "12px 16px",
+                  marginBottom: 16,
+                  textAlign: "center",
+                  fontSize: 14,
                   color: "#8B4513",
-                  fontWeight: 700,
-                  marginBottom: 10,
-                  textTransform: "uppercase",
-                  letterSpacing: 1,
                 }}
               >
-                Image Puzzle
-              </div>
+                💡 ඉඟිය: පහන් පේළි වශයෙන් ගණන් කරන්න. ඉහළ පේළියේ 2ක්, පහළ පේළියේ 2ක්!
+              </motion.div>
+            )}
+          </AnimatePresence>
 
-              <h3
-                style={{
-                  margin: 0,
-                  color: "#5c3b14",
-                  fontSize: 22,
-                  lineHeight: 1.5,
-                  fontWeight: 700,
-                }}
-              >
-                රූපයේ ඇති පහන් ගණන කීයද?
-              </h3>
-            </div>
+          {/* OPTIONS */}
+          <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+            {options.map((opt, i) => {
+              const isActive = selected === opt;
 
-            <div
-              style={{
-                background: "#fffaf0",
-                border: "2px solid #f5d76e",
-                borderRadius: 18,
-                padding: 12,
-                marginBottom: 22,
-                boxShadow: "0 8px 18px rgba(0,0,0,0.05)",
-              }}
-            >
-              <img
-                src={lampsImage}
-                alt="lamps"
-                style={{
-                  width: "100%",
-                  borderRadius: 14,
-                  display: "block",
-                }}
-              />
-            </div>
-
-            <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-              {options.map((opt, i) => (
-                <Button
+              return (
+                <motion.div
                   key={i}
-                  block
-                  onClick={() => setSelected(opt)}
-                  style={{
-                    height: 54,
-                    borderRadius: 14,
-                    fontWeight: 700,
-                    fontSize: 15,
-                    border:
-                      selected === opt ? "2px solid #d48806" : "1px solid #ddd",
-                    background:
-                      selected === opt
-                        ? "linear-gradient(135deg, #ffe58f, #ffd666)"
-                        : "#fff",
-                    color: "#333",
-                    boxShadow:
-                      selected === opt
-                        ? "0 8px 18px rgba(212,136,6,0.18)"
-                        : "0 4px 10px rgba(0,0,0,0.04)",
-                  }}
+                  initial={{ opacity: 0, x: -30 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.4 + i * 0.1 }}
                 >
-                  {opt}
-                </Button>
-              ))}
-            </div>
+                  <Button
+                    className="option-button"
+                    block
+                    onClick={() => setSelected(opt)}
+                    style={{
+                      height: 60,
+                      borderRadius: 20,
+                      fontWeight: 700,
+                      fontSize: 18,
+                      transition: "all 0.3s ease",
+                      transform: isActive ? "scale(1.02)" : "scale(1)",
+                      border: isActive
+                        ? "3px solid #FFD700"
+                        : "2px solid #f0f0f0",
+                      background: isActive
+                        ? "linear-gradient(135deg, #FFF9E6, #FFE4B5)"
+                        : "white",
+                      color: isActive ? "#8B4513" : "#666",
+                      boxShadow: isActive
+                        ? "0 15px 30px rgba(255,215,0,0.3)"
+                        : "0 8px 15px rgba(0,0,0,0.05)",
+                    }}
+                  >
+                    {opt}
+                  </Button>
+                </motion.div>
+              );
+            })}
+          </div>
 
+          {/* SUBMIT */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.8 }}
+          >
             <Button
               type="primary"
               block
-              disabled={!selected}
+              disabled={!selected || submitting}
+              loading={submitting}
               onClick={handleSubmit}
               style={{
-                marginTop: 22,
-                height: 52,
-                borderRadius: 14,
-                background: "linear-gradient(135deg, #27AE60, #52c41a)",
+                marginTop: 28,
+                height: 56,
+                borderRadius: 30,
+                background: selected
+                  ? "linear-gradient(135deg, #27AE60, #2ECC71)"
+                  : "#f0f0f0",
                 border: "none",
                 fontWeight: 800,
-                fontSize: 16,
-                boxShadow: "0 10px 24px rgba(39,174,96,0.22)",
+                fontSize: 18,
+                boxShadow: selected
+                  ? "0 15px 30px rgba(39,174,96,0.3)"
+                  : "none",
+                transition: "all 0.3s ease",
+                color: selected ? "white" : "#999",
+              }}
+              onMouseEnter={(e) => {
+                if (selected) {
+                  e.currentTarget.style.transform = "translateY(-3px) scale(1.02)";
+                  e.currentTarget.style.boxShadow = "0 20px 40px rgba(39,174,96,0.4)";
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (selected) {
+                  e.currentTarget.style.transform = "translateY(0) scale(1)";
+                  e.currentTarget.style.boxShadow = "0 15px 30px rgba(39,174,96,0.3)";
+                }
               }}
             >
-              ✅ Submit Answer
+              <CheckCircleOutlined /> පිළිතුර යොමු කරන්න
             </Button>
-          </>
-        )}
-      </Card>
-      <GameEndModal open={showModal} onClose={() => setShowModal(false)} />
+          </motion.div>
+
+          {/* Decorative Footer */}
+          <div
+            style={{
+              marginTop: 24,
+              display: "flex",
+              justifyContent: "center",
+              gap: 16,
+              opacity: 0.6,
+            }}
+          >
+            <span className="flicker" style={{ fontSize: 20 }}>🏮</span>
+            <span style={{ fontSize: 20, animation: "gentleFloat 3s ease-in-out infinite" }}>🌸</span>
+            <span className="flicker" style={{ fontSize: 20, animationDelay: "1s" }}>🪔</span>
+            <span style={{ fontSize: 20, animation: "gentleFloat 3.5s ease-in-out infinite" }}>🌺</span>
+            <span className="flicker" style={{ fontSize: 20, animationDelay: "2s" }}>🕯️</span>
+          </div>
+
+        
+        
+        </Card>
+      </motion.div>
+
+      <GameEndModal
+        open={showModal}
+        gameName="Hidden Lamps"
+        onClose={() => navigate("/")}
+      />
     </div>
   );
 }

@@ -10,6 +10,7 @@ import RabanaGame from "./pages/RabanaGame";
 import CatchKavum from "./pages/CatchKavum";
 import BreakPot from "./pages/BreakPot";
 import Welcome from "./pages/Welcome";
+import BackgroundMusic from "./components/BackgroundMusic";
 
 function App() {
   const [player, setPlayer] = useState(null);
@@ -21,8 +22,13 @@ function App() {
   }, []);
 
   return (
-    <Routes>
 
+
+
+    <>
+    
+          <BackgroundMusic />
+            <Routes>
       {/* 🔐 If no player → force to welcome */}
       <Route
         path="/"
@@ -30,15 +36,13 @@ function App() {
           player ? (
             <GamesHome player={player} />
           ) : (
-            <Navigate to="/welcome" />
+            <GamesHome player={player} />
+            //  <Navigate to="/welcome" />
           )
         }
       />
 
-      <Route
-        path="/welcome"
-        element={<Welcome setPlayer={setPlayer} />}
-      />
+      <Route path="/welcome" element={<Welcome setPlayer={setPlayer} />} />
 
       <Route path="/spin" element={<SpinWheel player={player} />} />
       <Route path="/game1" element={<Game1 player={player} />} />
@@ -47,8 +51,9 @@ function App() {
       <Route path="/rabana" element={<RabanaGame player={player} />} />
       <Route path="/kavum" element={<CatchKavum player={player} />} />
       <Route path="/break" element={<BreakPot player={player} />} />
-
     </Routes>
+    </>
+  
   );
 }
 

@@ -47,3 +47,11 @@
   background: linear-gradient(135deg, #FFF3E0, #FFE5B4, #FFDAB9);
   z-index: -1;
 }
+
+@keyframes shake {
+  0% { transform: translateX(0); }
+  25% { transform: translateX(-3px); }
+  50% { transform: translateX(3px); }
+  75% { transform: translateX(-3px); }
+  100% { transform: translateX(0); }
+}
