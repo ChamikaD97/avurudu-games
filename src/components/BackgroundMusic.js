@@ -9,7 +9,7 @@ export default function BackgroundMusic() {
 
     if (!audio) return;
 
-    audio.volume = 0.9; // 🔊 adjust volume (0.0 - 1.0)
+    audio.volume = 1; // 🔊 adjust volume (0.0 - 1.0)
 
     const playMusic = () => {
       audio.play().catch(() => {

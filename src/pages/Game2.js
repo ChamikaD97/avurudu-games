@@ -575,7 +575,7 @@ export default function Game2({ player }) {
 
       <GameEndModal
         open={showModal}
-        gameName="Kavum Count"
+        gameName="කැවුම් අල්ලන්න"
         onClose={() => navigate("/")}
       />
     </div>

@@ -614,7 +614,8 @@ export default function Game3({ player }) {
 
       <GameEndModal
         open={showModal}
-        gameName="Hidden Lamps"
+        gameName="සැඟවුණු පහන් හොයමු
+"
         onClose={() => navigate("/")}
       />
     </div>

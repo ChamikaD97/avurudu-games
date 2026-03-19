@@ -22,38 +22,33 @@ function App() {
   }, []);
 
   return (
-
-
-
     <>
-    
-          <BackgroundMusic />
-            <Routes>
-      {/* 🔐 If no player → force to welcome */}
-      <Route
-        path="/"
-        element={
-          player ? (
-            <GamesHome player={player} />
-          ) : (
-            <GamesHome player={player} />
-            //  <Navigate to="/welcome" />
-          )
-        }
-      />
+      <BackgroundMusic />
+      <Routes>
+        {/* 🔐 If no player → force to welcome */}
+        <Route
+          path="/"
+          element={
+            player ? (
+              <GamesHome player={player} />
+            ) : (
+              <GamesHome player={player} />
+              //  <Navigate to="/welcome" />
+            )
+          }
+        />
 
-      <Route path="/welcome" element={<Welcome setPlayer={setPlayer} />} />
+        <Route path="/welcome" element={<Welcome setPlayer={setPlayer} />} />
 
-      <Route path="/spin" element={<SpinWheel player={player} />} />
-      <Route path="/game1" element={<Game1 player={player} />} />
-      <Route path="/game2" element={<Game2 player={player} />} />
-      <Route path="/game3" element={<Game3 player={player} />} />
-      <Route path="/rabana" element={<RabanaGame player={player} />} />
-      <Route path="/kavum" element={<CatchKavum player={player} />} />
-      <Route path="/break" element={<BreakPot player={player} />} />
-    </Routes>
+        <Route path="/spin" element={<SpinWheel player={player} />} />
+        <Route path="/game1" element={<Game1 player={player} />} />
+        <Route path="/game2" element={<Game2 player={player} />} />
+        <Route path="/game3" element={<Game3 player={player} />} />
+        <Route path="/rabana" element={<RabanaGame player={player} />} />
+        <Route path="/kavum" element={<CatchKavum player={player} />} />
+        <Route path="/break" element={<BreakPot player={player} />} />
+      </Routes>
     </>
-  
   );
 }
 

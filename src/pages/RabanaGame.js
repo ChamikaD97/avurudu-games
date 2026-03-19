@@ -1013,7 +1013,7 @@ export default function RabanaGame({ player }) {
 
       <GameEndModal
         open={showModal}
-        gameName="Rabana Game"
+        gameName="රබානට තට්ටු කරන්න"
         onClose={() => navigate("/")}
       />
     </div>

@@ -15,8 +15,7 @@ import pot2 from "../assets/claypot2.png";
 import pot3 from "../assets/claypot3.png";
 import pot4 from "../assets/claypot4.png";
 import GameEndModal from "../components/GameEndModal";
-import hitSound from "../assets/sounds/hit.mp3";
-import breakSound from "../assets/sounds/break.mp3";
+import  breakSound from "../assets/sounds/break.mp3";
 import { submitBreakPotGame } from "../api/gameApi";
 
 export default function BreakPot({ player }) {
@@ -63,7 +62,7 @@ export default function BreakPot({ player }) {
   }, []);
 
   useEffect(() => {
-    hitAudioRef.current = new Audio(hitSound);
+    hitAudioRef.current = new Audio(breakSound);
     hitAudioRef.current.volume = 0.5;
 
     breakAudioRef.current = new Audio(breakSound);
@@ -965,7 +964,7 @@ export default function BreakPot({ player }) {
 
       <GameEndModal
         open={showModal}
-        gameName="Break the Pot"
+        gameName="කණා මුට්ටි බිඳිමු"
         onClose={() => navigate("/")}
       />
     </div>
