@@ -8,6 +8,7 @@ import {
   FireOutlined,
   CheckCircleOutlined
 } from "@ant-design/icons";
+import WINWAYLogo from "../assets/WIN WAY English Logo- PNG.png";
 
 export default function GameEndModal({
   open,
@@ -208,18 +209,8 @@ export default function GameEndModal({
         />
 
         {/* Floating Decorations */}
-        <div
-          className="floating-icon"
-          style={{
-            position: "absolute",
-            top: 20,
-            left: 20,
-            fontSize: 24,
-            opacity: 0.3,
-          }}
-        >
-          🪔
-        </div>
+      
+      
         <div
           className="floating-icon"
           style={{
@@ -290,30 +281,11 @@ export default function GameEndModal({
               WebkitTextFillColor: "transparent",
             }}
           >
-            {gameName}
+           
+           
           </motion.h2>
 
-          {/* Completed Badge */}
-          <motion.div
-            initial={{ opacity: 0, scale: 0.5 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.3 }}
-            style={{
-              display: "inline-flex",
-              alignItems: "center",
-              gap: 8,
-              background: "linear-gradient(135deg, #27AE60, #2ECC71)",
-              padding: "8px 20px",
-              borderRadius: 40,
-              marginBottom: 20,
-              color: "white",
-              fontWeight: 600,
-              boxShadow: "0 10px 20px rgba(39,174,96,0.3)",
-            }}
-          >
-            <CheckCircleOutlined />
-            සාර්ථකව අවසන් කළා!
-          </motion.div>
+          
 
           {/* Celebration Message */}
           <motion.p
@@ -327,7 +299,7 @@ export default function GameEndModal({
               lineHeight: 1.6,
             }}
           >
-            ඔබ මෙම ක්‍රීඩාව සාර්ථකව අවසන් කළා! 🎊
+            ඔබ මෙම ක්‍රීඩාව සාර්ථකව අවසන් කළා! 
             <br />
             <span style={{ color: "#8B4513", fontWeight: 600 }}>
               සුභ අවුරුද්දක් වේවා!

@@ -3,13 +3,21 @@ import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import GameEndModal from "../components/GameEndModal";
 import { motion, AnimatePresence } from "framer-motion";
-import { 
-  GiftOutlined, 
-  TrophyOutlined, 
+import {
+  GiftOutlined,
+  TrophyOutlined,
   FireOutlined,
-  StarOutlined 
+  StarOutlined,
 } from "@ant-design/icons";
+import Ada from "../assets/All lotteries/Ada Sampatha - Fri.jpg";
+import Dana from "../assets/All lotteries/DN- FRI.png";
+import Govi from "../assets/All lotteries/GS- FRI.png";
+import WINWAYLogo from "../assets/WIN WAY English Logo- PNG.png";
 
+import Handa from "../assets/All lotteries/H- SAT.png";
+import Mega from "../assets/All lotteries/MP- WED.png";
+import Maha from "../assets/All lotteries/MS- FRI.png";
+import Jaya from "../assets/All lotteries/Jaya - Fri.jpg";
 // ✅ API
 import { submitQuizGame } from "../api/gameApi";
 
@@ -60,8 +68,8 @@ export default function Game1({ player }) {
       }
     };
 
-    window.addEventListener('mousemove', handleMouseMove);
-    return () => window.removeEventListener('mousemove', handleMouseMove);
+    window.addEventListener("mousemove", handleMouseMove);
+    return () => window.removeEventListener("mousemove", handleMouseMove);
   }, []);
 
   useEffect(() => {
@@ -228,10 +236,10 @@ export default function Game1({ player }) {
 
   return (
     <div
-      ref={containerRef}
       style={{
         minHeight: "100vh",
-        background: "radial-gradient(circle at 30% 30%, #FFE4B5, #DEB887, #8B4513)",
+        background:
+          "radial-gradient(circle at 30% 30%, #FFE4B5, #DEB887, #8B4513)",
         padding: "30px 16px",
         display: "flex",
         justifyContent: "center",
@@ -261,73 +269,6 @@ export default function Game1({ player }) {
           pointerEvents: "none",
         }}
       />
-
-      {/* Floating Decorative Elements */}
-      <div
-        className="floating-element"
-        style={{
-          top: "10%",
-          left: "5%",
-          fontSize: 48,
-          '--duration': '12s',
-          '--delay': '0s',
-          transform: `translate(${mousePosition.x * 0.3}px, ${mousePosition.y * 0.3}px)`,
-        }}
-      >
-        🪔
-      </div>
-      <div
-        className="floating-element"
-        style={{
-          top: "80%",
-          right: "5%",
-          fontSize: 36,
-          '--duration': '15s',
-          '--delay': '2s',
-          transform: `translate(${mousePosition.x * 0.5}px, ${mousePosition.y * 0.5}px)`,
-        }}
-      >
-        🌸
-      </div>
-      <div
-        className="floating-element"
-        style={{
-          top: "20%",
-          right: "15%",
-          fontSize: 42,
-          '--duration': '10s',
-          '--delay': '1s',
-          transform: `translate(${mousePosition.x * 0.4}px, ${mousePosition.y * 0.4}px)`,
-        }}
-      >
-        🏮
-      </div>
-      <div
-        className="floating-element"
-        style={{
-          bottom: "15%",
-          left: "10%",
-          fontSize: 40,
-          '--duration': '14s',
-          '--delay': '3s',
-          transform: `translate(${mousePosition.x * 0.6}px, ${mousePosition.y * 0.6}px)`,
-        }}
-      >
-        🌺
-      </div>
-      <div
-        className="floating-element"
-        style={{
-          top: "40%",
-          left: "20%",
-          fontSize: 32,
-          '--duration': '11s',
-          '--delay': '2.5s',
-          transform: `translate(${mousePosition.x * 0.2}px, ${mousePosition.y * 0.2}px)`,
-        }}
-      >
-        ✨
-      </div>
 
       {/* Main Card */}
       <motion.div
@@ -363,54 +304,44 @@ export default function Game1({ player }) {
           >
             <div
               style={{
-                position: "absolute",
-                top: -10,
-                left: -10,
-                width: 60,
-                height: 60,
-                background: "radial-gradient(circle, rgba(255,215,0,0.2) 0%, transparent 70%)",
-                borderRadius: "50%",
-                animation: "spinSlow 15s linear infinite",
-              }}
-            />
-            
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                <StarOutlined style={{ color: "#FFD700", fontSize: 24 }} />
-                <span style={{ color: "#8B4513", fontWeight: 600 }}>
-                  ප්‍රශ්නය {current + 1}/{questions.length}
-                </span>
-              </div>
-              <TrophyOutlined style={{ color: "#FFD700", fontSize: 24 }} />
-            </div>
-
-            {/* Progress Bar */}
-            <Progress
-              percent={progress}
-              showInfo={false}
-              strokeColor={{
-                '0%': '#ffd666',
-                '100%': '#ffa940',
-              }}
-              trailColor="rgba(255, 215, 0, 0.1)"
-              style={{ marginBottom: 16 }}
-            />
-
-            <div
-              style={{
-                fontSize: 48,
-                textAlign: "center",
-                animation: "gentleFloat 3s ease-in-out infinite",
+                display: "flex",
+                justifyContent: "center",
+                marginBottom: 0,
               }}
             >
-              🎯
+              <motion.img
+                src={WINWAYLogo}
+                alt="Winway Logo"
+                initial={{ opacity: 0, scale: 0.85, y: -10 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                transition={{ duration: 0.65 }}
+                style={{
+                  width: 120,
+                  maxWidth: "80%",
+                  height: "auto",
+                  objectFit: "contain",
+                  filter: "drop-shadow(0 8px 18px rgba(139, 69, 19, 0.18))",
+                }}
+              />
             </div>
-
+            <h2
+              style={{
+                color: "#8B4513",
+                fontSize: 20,
+                fontWeight: 900,
+                textAlign: "center",
+                background: "linear-gradient(135deg, #8B4513, #D2691E)",
+                WebkitBackgroundClip: "text",
+                WebkitTextFillColor: "transparent",
+              }}
+            >
+              WINWAY
+            </h2>
             <h2
               style={{
                 margin: "12px 0 8px",
                 color: "#8B4513",
-                fontSize: 28,
+                fontSize: 20,
                 fontWeight: 800,
                 textAlign: "center",
                 background: "linear-gradient(135deg, #8B4513, #D2691E)",
@@ -420,10 +351,6 @@ export default function Game1({ player }) {
             >
               අවුරුදු ප්‍රශ්න මාලාව
             </h2>
-
-            <p style={{ textAlign: "center", color: "#7a7a7a", fontSize: 15 }}>
-              වේලාව ඉවර වෙන්න කලින් අවුරුදු ප්‍රශ්නවලට පිළිතුරු දෙන්න!
-            </p>
           </div>
 
           {/* Question Section */}
@@ -446,28 +373,11 @@ export default function Game1({ player }) {
                   boxShadow: "inset 0 2px 10px rgba(0,0,0,0.02)",
                 }}
               >
-                <div
-                  style={{
-                    fontSize: 14,
-                    color: "#8B4513",
-                    fontWeight: 700,
-                    marginBottom: 12,
-                    textTransform: "uppercase",
-                    letterSpacing: 1,
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 8,
-                  }}
-                >
-                  <FireOutlined style={{ color: "#FFD700" }} />
-                  ප්‍රශ්නය
-                </div>
-
                 <h3
                   style={{
                     margin: 0,
                     color: "#5c3b14",
-                    fontSize: 22,
+                    fontSize: 16,
                     lineHeight: 1.6,
                     fontWeight: 700,
                   }}
@@ -477,7 +387,9 @@ export default function Game1({ player }) {
               </div>
 
               {/* Options */}
-              <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+              <div
+                style={{ display: "flex", flexDirection: "column", gap: 12 }}
+              >
                 {q.options.map((opt, i) => (
                   <motion.div
                     key={opt}
@@ -493,15 +405,20 @@ export default function Game1({ player }) {
                         height: 60,
                         borderRadius: 20,
                         fontWeight: 600,
-                        fontSize: 16,
-                        border: selected === opt ? "3px solid #FFD700" : "2px solid #f0f0f0",
-                        background: selected === opt
-                          ? "linear-gradient(135deg, #FFF9E6, #FFE4B5)"
-                          : "white",
+                        fontSize: 14,
+                        border:
+                          selected === opt
+                            ? "3px solid #FFD700"
+                            : "2px solid #f0f0f0",
+                        background:
+                          selected === opt
+                            ? "linear-gradient(135deg, #FFF9E6, #FFE4B5)"
+                            : "white",
                         color: selected === opt ? "#8B4513" : "#666",
-                        boxShadow: selected === opt
-                          ? "0 10px 20px rgba(255,215,0,0.2)"
-                          : "0 5px 15px rgba(0,0,0,0.05)",
+                        boxShadow:
+                          selected === opt
+                            ? "0 10px 20px rgba(255,215,0,0.2)"
+                            : "0 5px 15px rgba(0,0,0,0.05)",
                         transition: "all 0.3s ease",
                       }}
                     >
@@ -512,20 +429,59 @@ export default function Game1({ player }) {
               </div>
             </motion.div>
           </AnimatePresence>
-
-          {/* Submit Button */}
+          {/* Action Buttons */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.5 }}
+            style={{
+              marginTop: 28,
+              display: "flex",
+              gap: 12,
+            }}
           >
+            <Button
+              onClick={() => {
+                if (current > 0) {
+                  setCurrent((prev) => prev - 1);
+                  setSelected(answers[current - 1]?.selected || null);
+                  setAnswers((prev) => prev.slice(0, -1));
+                } else {
+                  navigate("/");
+                }
+              }}
+                   style={{
+                height: 56,
+                borderRadius: 30,
+         
+                border: "2px solid #d41717",
+                background: "linear-gradient(135deg, #FFF8E1, #d41717b7)",
+                color: "#554646",
+                fontWeight: 700,
+                fontSize: 15,
+                boxShadow: "0 10px 20px rgba(212,160,23,0.18)",
+                transition: "all 0.3s ease",
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.transform = "translateY(-3px) scale(1.02)";
+                e.currentTarget.style.boxShadow =
+                  "0 16px 28px rgba(212,160,23,0.28)";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = "translateY(0) scale(1)";
+                e.currentTarget.style.boxShadow =
+                  "0 10px 20px rgba(212,160,23,0.18)";
+              }}
+            >
+              {current > 0 ? "පෙර" : "ආපසු"}
+            </Button>
+
             <Button
               type="primary"
               block
               disabled={!selected}
               onClick={handleSubmit}
               style={{
-                marginTop: 28,
                 height: 56,
                 borderRadius: 30,
                 background: selected
@@ -533,7 +489,7 @@ export default function Game1({ player }) {
                   : "#f0f0f0",
                 border: "none",
                 fontWeight: 800,
-                fontSize: 18,
+                fontSize: 15,
                 boxShadow: selected
                   ? "0 15px 30px rgba(39,174,96,0.3)"
                   : "none",
@@ -542,43 +498,32 @@ export default function Game1({ player }) {
               }}
               onMouseEnter={(e) => {
                 if (selected) {
-                  e.currentTarget.style.transform = "translateY(-3px) scale(1.02)";
-                  e.currentTarget.style.boxShadow = "0 20px 40px rgba(39,174,96,0.4)";
+                  e.currentTarget.style.transform =
+                    "translateY(-3px) scale(1.02)";
+                  e.currentTarget.style.boxShadow =
+                    "0 20px 40px rgba(39,174,96,0.4)";
                 }
               }}
               onMouseLeave={(e) => {
                 if (selected) {
                   e.currentTarget.style.transform = "translateY(0) scale(1)";
-                  e.currentTarget.style.boxShadow = "0 15px 30px rgba(39,174,96,0.3)";
+                  e.currentTarget.style.boxShadow =
+                    "0 15px 30px rgba(39,174,96,0.3)";
                 }
               }}
             >
-              {current + 1 === questions.length ? "✅ අවසන් කරන්න" : "✅ ඊළඟ ප්‍රශ්නය"}
+              {current + 1 === questions.length ? "අවසන් කරන්න" : "ඊළඟ"}
             </Button>
           </motion.div>
-
-          {/* Decorative Footer */}
-          <div
-            style={{
-              marginTop: 24,
-              display: "flex",
-              justifyContent: "center",
-              gap: 12,
-              opacity: 0.6,
-            }}
-          >
-            <span style={{ fontSize: 20, animation: "gentleFloat 3s ease-in-out infinite" }}>🌸</span>
-            <span style={{ fontSize: 20, animation: "gentleFloat 3.5s ease-in-out infinite" }}>🌺</span>
-            <span style={{ fontSize: 20, animation: "gentleFloat 4s ease-in-out infinite" }}>🍃</span>
-            <span style={{ fontSize: 20, animation: "gentleFloat 2.5s ease-in-out infinite" }}>✨</span>
-          </div>
+    
+    
         </Card>
       </motion.div>
 
       {/* Game End Modal */}
       <GameEndModal
         open={showModal}
-        gameName="Quiz Game"
+        gameName="අවුරුදු ප්‍රශ්න මාලාව"
         onClose={() => {
           setShowModal(false);
           navigate("/");

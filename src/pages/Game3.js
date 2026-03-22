@@ -11,6 +11,7 @@ import {
 } from "@ant-design/icons";
 import lampsImage from "../assets/avurudu-lamps.jpeg";
 import GameEndModal from "../components/GameEndModal";
+import WINWAYLogo from "../assets/WIN WAY English Logo- PNG.png";
 
 // API
 import { submitHiddenLampsGame } from "../api/gameApi";
@@ -227,7 +228,7 @@ export default function Game3({ player }) {
 
   return (
     <div
-      ref={containerRef}
+      
       style={{
         minHeight: "100vh",
         background: "radial-gradient(circle at 30% 30%, #FFE4B5, #DEB887, #8B4513)",
@@ -375,31 +376,37 @@ export default function Game3({ player }) {
                 animation: "spinSlow 15s linear infinite",
               }}
             />
-            
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 10, marginBottom: 10 }}>
-              <BulbOutlined style={{ color: "#FFD700", fontSize: 24 }} />
-              <span style={{ color: "#8B4513", fontWeight: 600, fontSize: 16 }}>
-                පහන් සෙවීමේ ක්‍රීඩාව
-              </span>
-              <BulbOutlined style={{ color: "#FFD700", fontSize: 24 }} />
-            </div>
+          
+          
 
-            <div
-              className="flicker"
+                  <div
               style={{
-                fontSize: 60,
-                textAlign: "center",
-                marginBottom: 10,
+                display: "flex",
+                justifyContent: "center",
+                marginBottom: 0,
               }}
             >
-              🏮
+              <motion.img
+                src={WINWAYLogo}
+                alt="Winway Logo"
+                initial={{ opacity: 0, scale: 0.85, y: -10 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                transition={{ duration: 0.65 }}
+                style={{
+                  width: 120,
+                  maxWidth: "80%",
+                  height: "auto",
+                  objectFit: "contain",
+                  filter: "drop-shadow(0 8px 18px rgba(139, 69, 19, 0.18))",
+                }}
+              />
             </div>
-
+      
             <h2
               style={{
                 margin: "12px 0 8px",
                 color: "#8B4513",
-                fontSize: 28,
+                fontSize: 20,
                 fontWeight: 800,
                 textAlign: "center",
                 background: "linear-gradient(135deg, #8B4513, #D2691E)",
@@ -410,9 +417,8 @@ export default function Game3({ player }) {
               පහන් ගණන හොයමු
             </h2>
 
-            <p style={{ textAlign: "center", color: "#7a7a7a", fontSize: 15 }}>
-              රූපය හොඳින් බලලා නිවැරදි පිළිතුර තෝරන්න!
-            </p>
+          
+          
           </div>
 
           {/* QUESTION */}
@@ -432,7 +438,7 @@ export default function Game3({ player }) {
               style={{
                 margin: 0,
                 color: "#5c3b14",
-                fontSize: 22,
+                fontSize: 17,
                 fontWeight: 700,
                 display: "flex",
                 alignItems: "center",
@@ -440,9 +446,7 @@ export default function Game3({ player }) {
                 gap: 10,
               }}
             >
-              <FireOutlined style={{ color: "#FFD700" }} />
               රූපයේ ඇති පහන් ගණන කීයද?
-              <FireOutlined style={{ color: "#FFD700" }} />
             </h3>
           </motion.div>
 
@@ -480,29 +484,6 @@ export default function Game3({ player }) {
             
           </motion.div>
 
-          {/* Hint Message */}
-          <AnimatePresence>
-            {showHint && (
-              <motion.div
-                initial={{ opacity: 0, y: -10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                style={{
-                  background: "rgba(255, 215, 0, 0.1)",
-                  border: "1px solid #FFD700",
-                  borderRadius: 30,
-                  padding: "12px 16px",
-                  marginBottom: 16,
-                  textAlign: "center",
-                  fontSize: 14,
-                  color: "#8B4513",
-                }}
-              >
-                💡 ඉඟිය: පහන් පේළි වශයෙන් ගණන් කරන්න. ඉහළ පේළියේ 2ක්, පහළ පේළියේ 2ක්!
-              </motion.div>
-            )}
-          </AnimatePresence>
-
           {/* OPTIONS */}
           <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
             {options.map((opt, i) => {
@@ -521,9 +502,9 @@ export default function Game3({ player }) {
                     onClick={() => setSelected(opt)}
                     style={{
                       height: 60,
-                      borderRadius: 20,
-                      fontWeight: 700,
-                      fontSize: 18,
+                      borderRadius: 15,
+                   fontWeight: 600,
+                        fontSize: 14,
                       transition: "all 0.3s ease",
                       transform: isActive ? "scale(1.02)" : "scale(1)",
                       border: isActive
@@ -544,13 +525,44 @@ export default function Game3({ player }) {
               );
             })}
           </div>
-
-          {/* SUBMIT */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.8 }}
+            style={{
+              marginTop: 28,
+              display: "flex",
+              gap: 12,
+            }}
           >
+            <Button
+              onClick={() => navigate("/")}
+              style={{
+                height: 56,
+                borderRadius: 30,
+         
+                border: "2px solid #d41717",
+                background: "linear-gradient(135deg, #FFF8E1, #d41717b7)",
+                color: "#554646",
+                fontWeight: 700,
+                fontSize: 15,
+                boxShadow: "0 10px 20px rgba(212,160,23,0.18)",
+                transition: "all 0.3s ease",
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.transform = "translateY(-3px) scale(1.02)";
+                e.currentTarget.style.boxShadow =
+                  "0 16px 28px rgba(212,160,23,0.28)";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = "translateY(0) scale(1)";
+                e.currentTarget.style.boxShadow =
+                  "0 10px 20px rgba(212,160,23,0.18)";
+              }}
+            >
+              ආපසු
+            </Button>
+
             <Button
               type="primary"
               block
@@ -558,7 +570,6 @@ export default function Game3({ player }) {
               loading={submitting}
               onClick={handleSubmit}
               style={{
-                marginTop: 28,
                 height: 56,
                 borderRadius: 30,
                 background: selected
@@ -566,7 +577,7 @@ export default function Game3({ player }) {
                   : "#f0f0f0",
                 border: "none",
                 fontWeight: 800,
-                fontSize: 18,
+                fontSize: 15,
                 boxShadow: selected
                   ? "0 15px 30px rgba(39,174,96,0.3)"
                   : "none",
@@ -575,38 +586,25 @@ export default function Game3({ player }) {
               }}
               onMouseEnter={(e) => {
                 if (selected) {
-                  e.currentTarget.style.transform = "translateY(-3px) scale(1.02)";
-                  e.currentTarget.style.boxShadow = "0 20px 40px rgba(39,174,96,0.4)";
+                  e.currentTarget.style.transform =
+                    "translateY(-3px) scale(1.02)";
+                  e.currentTarget.style.boxShadow =
+                    "0 20px 40px rgba(39,174,96,0.4)";
                 }
               }}
               onMouseLeave={(e) => {
                 if (selected) {
                   e.currentTarget.style.transform = "translateY(0) scale(1)";
-                  e.currentTarget.style.boxShadow = "0 15px 30px rgba(39,174,96,0.3)";
+                  e.currentTarget.style.boxShadow =
+                    "0 15px 30px rgba(39,174,96,0.3)";
                 }
               }}
             >
-              <CheckCircleOutlined /> පිළිතුර යොමු කරන්න
+              <CheckCircleOutlined /> පිළිතුර යවන්න
             </Button>
           </motion.div>
-
-          {/* Decorative Footer */}
-          <div
-            style={{
-              marginTop: 24,
-              display: "flex",
-              justifyContent: "center",
-              gap: 16,
-              opacity: 0.6,
-            }}
-          >
-            <span className="flicker" style={{ fontSize: 20 }}>🏮</span>
-            <span style={{ fontSize: 20, animation: "gentleFloat 3s ease-in-out infinite" }}>🌸</span>
-            <span className="flicker" style={{ fontSize: 20, animationDelay: "1s" }}>🪔</span>
-            <span style={{ fontSize: 20, animation: "gentleFloat 3.5s ease-in-out infinite" }}>🌺</span>
-            <span className="flicker" style={{ fontSize: 20, animationDelay: "2s" }}>🕯️</span>
-          </div>
-
+        
+        
         
         
         </Card>

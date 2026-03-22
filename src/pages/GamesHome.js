@@ -4,7 +4,14 @@ import { useState, useEffect, useMemo, useRef } from "react";
 import BonusSpinModal from "../components/BonusSpinModal";
 import bannerVideoMobile from "../assets/videos/Mobile.mp4";
 import bannerVideoWeb from "../assets/videos/Web.mp4";
+import Ada from "../assets/All lotteries/Ada Sampatha - Fri.jpg";
+import Dana from "../assets/All lotteries/DN- FRI.png";
+import Govi from "../assets/All lotteries/GS- FRI.png";
 
+import Handa from "../assets/All lotteries/H- SAT.png";
+import Mega from "../assets/All lotteries/MP- WED.png";
+import Maha from "../assets/All lotteries/MS- FRI.png";
+import Jaya from "../assets/All lotteries/Jaya - Fri.jpg";
 import {
   GiftOutlined,
   LockOutlined,
@@ -187,7 +194,15 @@ export default function GamesHome() {
           background-position: 1000px 0;
         }
       }
+  .card-lottery-deco {
+  position: absolute;
+  pointer-events: none;
+  z-index: 1;
+  opacity: 1;
 
+animation: floatLottery 2s ease-in-out infinite;  
+filter: drop-shadow(0 8px 14px rgba(0, 0, 0, 0.18));
+}
       @keyframes firework {
         0% {
           transform: translate(-50%, -50%) scale(0);
@@ -202,7 +217,20 @@ export default function GamesHome() {
           opacity: 0;
         }
       }
-
+      @keyframes floatLottery {
+        0% {
+          transform: translateY(0px) rotate(0deg);
+          opacity: 0.5;
+        }
+        50% {
+          transform: translateY(-10px) rotate(3deg);
+          opacity: 0.5;
+        }
+        100% {
+          transform: translateY(0px) rotate(0deg);
+          opacity: 0.6;
+        }
+      }
       @keyframes rotateY {
         from {
           transform: rotateY(0deg);
@@ -367,7 +395,7 @@ export default function GamesHome() {
 
   return (
     <div
-      ref={containerRef}
+      
       style={{
         minHeight: "100vh",
         background:
@@ -384,7 +412,6 @@ export default function GamesHome() {
           overflow: "hidden",
           position: "relative",
           boxShadow: "0 20px 40px rgba(0,0,0,0.25)",
-          
         }}
       >
         <video
@@ -466,7 +493,7 @@ export default function GamesHome() {
           margin: "0 auto",
           position: "relative",
           zIndex: 10,
-          marginTop:50,
+          marginTop: 50,
           padding: isMobile ? "20px 0" : "0",
         }}
       >
@@ -701,7 +728,82 @@ export default function GamesHome() {
             );
           })}
         </Row>
+        <img
+          src={Dana}
+          alt="Ada"
+          className="card-lottery-deco"
+          style={{
+            top: 50,
+            left: 30,
+            width: 52,
+            transform: "rotate(-12deg)",
+            ["--duration"]: "7s",
+          }}
+        />
+        
 
+        <img
+          src={Mega}
+          alt="Mega"
+          className="card-lottery-deco"
+          style={{
+            top: 1250,
+            left: 20,
+            width: 70,
+            transform: "rotate(-12deg)",
+            ["--duration"]: "7s",
+          }}
+        />
+
+        <img
+          src={Handa}
+          alt="Handa"
+          className="card-lottery-deco"
+          style={{
+            top: 1000,
+            right: 20,
+            width: 70,
+            transform: "rotate(10deg)",
+            ["--duration"]: "8s",
+          }}
+        />
+        <img
+          src={Govi}
+          alt="Govi"
+          className="card-lottery-deco"
+          style={{
+            top: 1550,
+            right: 20,
+            width: 70,
+            transform: "rotate(-8deg)",
+            ["--duration"]: "6.5s",
+          }}
+        />
+
+        <img
+          src={Maha}
+          alt="Maha"
+          className="card-lottery-deco"
+          style={{
+            top: 688,
+            left: 10,
+            width: 50,
+            transform: "rotate(8deg)",
+            ["--duration"]: "7.2s",
+          }}
+        />
+        <img
+          src={Jaya}
+          alt="Maha"
+          className="card-lottery-deco"
+          style={{
+            top: 350,
+            right: 10,
+            width: 50,
+            transform: "rotate(8deg)",
+            ["--duration"]: "7.2s",
+          }}
+        />
         {/* Bonus Section - Responsive */}
         {allGamesDone && (
           <div

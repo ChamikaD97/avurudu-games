@@ -345,7 +345,7 @@ export default function RabanaGame({ player }) {
 
   return (
     <div
-      ref={containerRef}
+      
       style={{
         minHeight: "100vh",
         background:

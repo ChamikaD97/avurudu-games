@@ -358,7 +358,7 @@ export default function BreakPot({ player }) {
 
   return (
     <div
-      ref={containerRef}
+      
       style={{
         minHeight: "100vh",
         background: "radial-gradient(circle at 30% 30%, #8B4513, #D2691E, #CD853F)",

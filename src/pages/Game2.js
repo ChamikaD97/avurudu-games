@@ -1,23 +1,17 @@
 import { Card, Button } from "antd";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { motion, AnimatePresence } from "framer-motion";
-import { 
-  GiftOutlined, 
-  CheckCircleOutlined,
-  StarOutlined,
-  FireOutlined
-} from "@ant-design/icons";
+import { motion } from "framer-motion";
+import { CheckCircleOutlined, TrophyOutlined } from "@ant-design/icons";
 import kavumImg from "../assets/kavum-jar.jpeg";
 import GameEndModal from "../components/GameEndModal";
+import WINWAYLogo from "../assets/WIN WAY English Logo- PNG.png";
 
 // API
 import { submitKavumCountGame } from "../api/gameApi";
 
 export default function Game2({ player }) {
   const navigate = useNavigate();
-  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
-  const containerRef = useRef(null);
 
   const [selected, setSelected] = useState(null);
   const [animateIn, setAnimateIn] = useState(false);
@@ -28,33 +22,15 @@ export default function Game2({ player }) {
   const options = ["6", "7", "8", "9"];
   const correctAnswer = "7";
 
-  // ⏱️ TIME
   const [startTime, setStartTime] = useState(null);
-
-  // Track mouse for parallax effect
-  useEffect(() => {
-    const handleMouseMove = (e) => {
-      if (containerRef.current) {
-        const rect = containerRef.current.getBoundingClientRect();
-        setMousePosition({
-          x: ((e.clientX - rect.left) / rect.width - 0.5) * 20,
-          y: ((e.clientY - rect.top) / rect.height - 0.5) * 20,
-        });
-      }
-    };
-
-    window.addEventListener('mousemove', handleMouseMove);
-    return () => window.removeEventListener('mousemove', handleMouseMove);
-  }, []);
 
   useEffect(() => {
     setTimeout(() => setAnimateIn(true), 80);
     setStartTime(Date.now());
   }, []);
 
-  // Inject animations
   useEffect(() => {
-    const styleId = "game2-festival-animations";
+    const styleId = "game2-warm-style";
     if (document.getElementById(styleId)) return;
 
     const style = document.createElement("style");
@@ -83,15 +59,6 @@ export default function Game2({ player }) {
         }
       }
 
-      @keyframes pulseGlow {
-        0%, 100% {
-          filter: drop-shadow(0 0 10px rgba(255, 215, 0, 0.3));
-        }
-        50% {
-          filter: drop-shadow(0 0 25px rgba(255, 215, 0, 0.6));
-        }
-      }
-
       @keyframes spinSlow {
         from {
           transform: rotate(0deg);
@@ -101,21 +68,31 @@ export default function Game2({ player }) {
         }
       }
 
-      @keyframes bounce {
+      @keyframes pulseGlow {
         0%, 100% {
-          transform: translateY(0);
+          filter: drop-shadow(0 0 10px rgba(255, 215, 0, 0.3));
         }
         50% {
-          transform: translateY(-10px);
+          filter: drop-shadow(0 0 25px rgba(255, 215, 0, 0.6));
         }
       }
 
-      @keyframes shimmer {
-        0% {
-          background-position: -1000px 0;
+      @keyframes flicker {
+        0%, 100% {
+          opacity: 1;
+          transform: scale(1);
         }
-        100% {
-          background-position: 1000px 0;
+        25% {
+          opacity: 0.8;
+          transform: scale(0.95);
+        }
+        50% {
+          opacity: 1;
+          transform: scale(1.05);
+        }
+        75% {
+          opacity: 0.9;
+          transform: scale(0.98);
         }
       }
 
@@ -154,7 +131,12 @@ export default function Game2({ player }) {
         left: -100%;
         width: 100%;
         height: 100%;
-        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+        background: linear-gradient(
+          90deg,
+          transparent,
+          rgba(255, 255, 255, 0.3),
+          transparent
+        );
         transition: left 0.5s ease;
       }
 
@@ -166,8 +148,8 @@ export default function Game2({ player }) {
         animation: pulseGlow 2s ease-in-out infinite;
       }
 
-      .bounce {
-        animation: bounce 2s ease-in-out infinite;
+      .flicker {
+        animation: flicker 3s ease-in-out infinite;
       }
     `;
     document.head.appendChild(style);
@@ -212,10 +194,10 @@ export default function Game2({ player }) {
 
   return (
     <div
-      ref={containerRef}
       style={{
         minHeight: "100vh",
-        background: "radial-gradient(circle at 30% 30%, #FFE4B5, #DEB887, #8B4513)",
+        background:
+          "radial-gradient(circle at 30% 30%, #FFE4B5, #DEB887, #8B4513)",
         padding: "30px 16px",
         opacity: animateIn ? 1 : 0,
         transition: "all 0.5s ease",
@@ -255,67 +237,65 @@ export default function Game2({ player }) {
           top: "10%",
           left: "5%",
           fontSize: 48,
-          '--duration': '12s',
-          '--delay': '0s',
-          transform: `translate(${mousePosition.x * 0.3}px, ${mousePosition.y * 0.3}px)`,
+          "--duration": "12s",
+          "--delay": "0s",
         }}
       >
         🪔
       </div>
+
       <div
-        className="floating-element"
+        className="floating-element flicker"
         style={{
           top: "80%",
           right: "5%",
           fontSize: 36,
-          '--duration': '15s',
-          '--delay': '2s',
-          transform: `translate(${mousePosition.x * 0.5}px, ${mousePosition.y * 0.5}px)`,
+          "--duration": "15s",
+          "--delay": "2s",
         }}
       >
         🌸
       </div>
+
       <div
         className="floating-element"
         style={{
           top: "20%",
           right: "15%",
           fontSize: 42,
-          '--duration': '10s',
-          '--delay': '1s',
-          transform: `translate(${mousePosition.x * 0.4}px, ${mousePosition.y * 0.4}px)`,
+          "--duration": "10s",
+          "--delay": "1s",
         }}
       >
         🏮
       </div>
+
       <div
-        className="floating-element"
+        className="floating-element flicker"
         style={{
           bottom: "15%",
           left: "10%",
           fontSize: 40,
-          '--duration': '14s',
-          '--delay': '3s',
-          transform: `translate(${mousePosition.x * 0.6}px, ${mousePosition.y * 0.6}px)`,
+          "--duration": "14s",
+          "--delay": "3s",
         }}
       >
-        🌺
+        🍘
       </div>
+
       <div
         className="floating-element"
         style={{
           top: "30%",
           right: "25%",
           fontSize: 32,
-          '--duration': '11s',
-          '--delay': '1.5s',
-          transform: `translate(${mousePosition.x * 0.2}px, ${mousePosition.y * 0.2}px)`,
+          "--duration": "11s",
+          "--delay": "1.5s",
         }}
       >
-        🍘
+        ✨
       </div>
 
-      {/* Main Card */}
       <motion.div
         initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
@@ -339,7 +319,6 @@ export default function Game2({ player }) {
           }}
           bodyStyle={{ padding: 32 }}
         >
-          {/* Decorative Header */}
           <div
             style={{
               marginBottom: 24,
@@ -355,36 +334,41 @@ export default function Game2({ player }) {
                 left: -10,
                 width: 60,
                 height: 60,
-                background: "radial-gradient(circle, rgba(255,215,0,0.2) 0%, transparent 70%)",
+                background:
+                  "radial-gradient(circle, rgba(255,215,0,0.2) 0%, transparent 70%)",
                 borderRadius: "50%",
                 animation: "spinSlow 15s linear infinite",
               }}
             />
-            
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 10, marginBottom: 10 }}>
-              <StarOutlined style={{ color: "#FFD700", fontSize: 24 }} />
-              <span style={{ color: "#8B4513", fontWeight: 600, fontSize: 16 }}>
-                කැවුම් ගණන් කිරීමේ ක්‍රීඩාව
-              </span>
-              <StarOutlined style={{ color: "#FFD700", fontSize: 24 }} />
-            </div>
 
             <div
-              className="bounce"
               style={{
-                fontSize: 60,
-                textAlign: "center",
-                marginBottom: 10,
+                display: "flex",
+                justifyContent: "center",
+                marginBottom: 0,
               }}
             >
-              🍘
+              <motion.img
+                src={WINWAYLogo}
+                alt="Winway Logo"
+                initial={{ opacity: 0, scale: 0.85, y: -10 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                transition={{ duration: 0.65 }}
+                style={{
+                  width: 120,
+                  maxWidth: "80%",
+                  height: "auto",
+                  objectFit: "contain",
+                  filter: "drop-shadow(0 8px 18px rgba(139, 69, 19, 0.18))",
+                }}
+              />
             </div>
 
             <h2
               style={{
                 margin: "12px 0 8px",
                 color: "#8B4513",
-                fontSize: 28,
+                fontSize: 20,
                 fontWeight: 800,
                 textAlign: "center",
                 background: "linear-gradient(135deg, #8B4513, #D2691E)",
@@ -394,10 +378,6 @@ export default function Game2({ player }) {
             >
               කැවුම් ගණන හොයමු
             </h2>
-
-            <p style={{ textAlign: "center", color: "#7a7a7a", fontSize: 15 }}>
-              රූපය බලලා නිවැරදි කැවුම් ගණන තෝරන්න!
-            </p>
           </div>
 
           {/* QUESTION */}
@@ -417,7 +397,7 @@ export default function Game2({ player }) {
               style={{
                 margin: 0,
                 color: "#5c3b14",
-                fontSize: 22,
+                fontSize: 17,
                 fontWeight: 700,
                 display: "flex",
                 alignItems: "center",
@@ -425,9 +405,7 @@ export default function Game2({ player }) {
                 gap: 10,
               }}
             >
-              <FireOutlined style={{ color: "#FFD700" }} />
               රූපයේ ඇති කැවුම් ගණන කීයද?
-              <FireOutlined style={{ color: "#FFD700" }} />
             </h3>
           </motion.div>
 
@@ -456,12 +434,11 @@ export default function Game2({ player }) {
                 borderRadius: 16,
                 transform: imageHover ? "scale(1.05)" : "scale(1)",
                 transition: "all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)",
-                boxShadow: imageHover ? "0 20px 40px rgba(139,69,19,0.3)" : "none",
+                boxShadow: imageHover
+                  ? "0 20px 40px rgba(139,69,19,0.3)"
+                  : "none",
               }}
             />
-            
-            {/* Floating badge */}
-            
           </motion.div>
 
           {/* OPTIONS */}
@@ -482,9 +459,9 @@ export default function Game2({ player }) {
                     onClick={() => setSelected(opt)}
                     style={{
                       height: 60,
-                      borderRadius: 20,
-                      fontWeight: 700,
-                      fontSize: 18,
+                      borderRadius: 15,
+                    fontWeight: 600,
+                        fontSize: 14,
                       transition: "all 0.3s ease",
                       transform: isActive ? "scale(1.02)" : "scale(1)",
                       border: isActive
@@ -499,19 +476,52 @@ export default function Game2({ player }) {
                         : "0 8px 15px rgba(0,0,0,0.05)",
                     }}
                   >
+                    <TrophyOutlined style={{ marginRight: 8 }} />
                     {opt}
                   </Button>
                 </motion.div>
               );
             })}
           </div>
-
-          {/* SUBMIT */}
+          {/* ACTION BUTTONS */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.8 }}
+            style={{
+              marginTop: 28,
+              display: "flex",
+              gap: 12,
+            }}
           >
+            <Button
+              onClick={() => navigate("/")}
+              style={{
+                height: 56,
+                borderRadius: 30,
+         
+                border: "2px solid #d41717",
+                background: "linear-gradient(135deg, #FFF8E1, #d41717b7)",
+                color: "#554646",
+                fontWeight: 700,
+                fontSize: 15,
+                boxShadow: "0 10px 20px rgba(212,160,23,0.18)",
+                transition: "all 0.3s ease",
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.transform = "translateY(-3px) scale(1.02)";
+                e.currentTarget.style.boxShadow =
+                  "0 16px 28px rgba(212,160,23,0.28)";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = "translateY(0) scale(1)";
+                e.currentTarget.style.boxShadow =
+                  "0 10px 20px rgba(212,160,23,0.18)";
+              }}
+            >
+              ආපසු
+            </Button>
+
             <Button
               type="primary"
               block
@@ -519,7 +529,6 @@ export default function Game2({ player }) {
               loading={submitting}
               onClick={handleSubmit}
               style={{
-                marginTop: 28,
                 height: 56,
                 borderRadius: 30,
                 background: selected
@@ -527,7 +536,7 @@ export default function Game2({ player }) {
                   : "#f0f0f0",
                 border: "none",
                 fontWeight: 800,
-                fontSize: 18,
+                fontSize: 15,
                 boxShadow: selected
                   ? "0 15px 30px rgba(39,174,96,0.3)"
                   : "none",
@@ -536,46 +545,31 @@ export default function Game2({ player }) {
               }}
               onMouseEnter={(e) => {
                 if (selected) {
-                  e.currentTarget.style.transform = "translateY(-3px) scale(1.02)";
-                  e.currentTarget.style.boxShadow = "0 20px 40px rgba(39,174,96,0.4)";
+                  e.currentTarget.style.transform =
+                    "translateY(-3px) scale(1.02)";
+                  e.currentTarget.style.boxShadow =
+                    "0 20px 40px rgba(39,174,96,0.4)";
                 }
               }}
               onMouseLeave={(e) => {
                 if (selected) {
                   e.currentTarget.style.transform = "translateY(0) scale(1)";
-                  e.currentTarget.style.boxShadow = "0 15px 30px rgba(39,174,96,0.3)";
+                  e.currentTarget.style.boxShadow =
+                    "0 15px 30px rgba(39,174,96,0.3)";
                 }
               }}
             >
-              <CheckCircleOutlined /> පිළිතුර යොමු කරන්න
+              <CheckCircleOutlined /> පිළිතුර යවන්න
             </Button>
           </motion.div>
-
-          {/* Decorative Footer */}
-          <div
-            style={{
-              marginTop: 24,
-              display: "flex",
-              justifyContent: "center",
-              gap: 16,
-              opacity: 0.6,
-            }}
-          >
-            <span style={{ fontSize: 20, animation: "gentleFloat 3s ease-in-out infinite" }}>🌸</span>
-            <span style={{ fontSize: 20, animation: "gentleFloat 3.5s ease-in-out infinite" }}>🌺</span>
-            <span style={{ fontSize: 20, animation: "gentleFloat 4s ease-in-out infinite" }}>🍃</span>
-            <span style={{ fontSize: 20, animation: "gentleFloat 2.5s ease-in-out infinite" }}>🍘</span>
-            <span style={{ fontSize: 20, animation: "gentleFloat 3.2s ease-in-out infinite" }}>✨</span>
-          </div>
-
-          
-          
+         
+         
         </Card>
       </motion.div>
 
       <GameEndModal
         open={showModal}
-        gameName="කැවුම් අල්ලන්න"
+        gameName="කැවුම් ගණන හොයමු"
         onClose={() => navigate("/")}
       />
     </div>

@@ -2,17 +2,20 @@ import { Card, Button } from "antd";
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { 
-  GiftOutlined, 
+import {
+  GiftOutlined,
   StarOutlined,
   FireOutlined,
   TrophyOutlined,
-  ClockCircleOutlined
+  ClockCircleOutlined,
 } from "@ant-design/icons";
 import Timer from "../components/Timer";
 import kavum from "../assets/kavum.png";
 import GameEndModal from "../components/GameEndModal";
 import { submitCatchKavumGame } from "../api/gameApi";
+import moveSound from "../assets/sounds/move.mp3";
+
+
 
 export default function CatchKavum({ player }) {
   const navigate = useNavigate();
@@ -29,7 +32,6 @@ export default function CatchKavum({ player }) {
   const [catchEffect, setCatchEffect] = useState(false);
   const [showRipple, setShowRipple] = useState(false);
   const [particles, setParticles] = useState([]);
-  const [combo, setCombo] = useState(0);
   const [lastCatchTime, setLastCatchTime] = useState(0);
 
   // Track mouse for parallax effect
@@ -44,11 +46,17 @@ export default function CatchKavum({ player }) {
       }
     };
 
-    window.addEventListener('mousemove', handleMouseMove);
-    return () => window.removeEventListener('mousemove', handleMouseMove);
+    window.addEventListener("mousemove", handleMouseMove);
+    return () => window.removeEventListener("mousemove", handleMouseMove);
   }, []);
 
-  // Generate particles on catch
+  const moveSoundRef = useRef(null);
+
+  useEffect(() => {
+    moveSoundRef.current = new Audio(moveSound);
+    moveSoundRef.current.volume = 0.4; // adjust if needed
+  }, []);
+
   const createParticles = (x, y) => {
     const newParticles = [];
     for (let i = 0; i < 8; i++) {
@@ -56,12 +64,12 @@ export default function CatchKavum({ player }) {
         id: Date.now() + i,
         x: x,
         y: y,
-        angle: (i * 45) * (Math.PI / 180),
+        angle: i * 45 * (Math.PI / 180),
         delay: i * 0.03,
       });
     }
     setParticles([...particles, ...newParticles]);
-    
+
     setTimeout(() => {
       setParticles([]);
     }, 500);
@@ -226,17 +234,23 @@ export default function CatchKavum({ player }) {
 
   const moveKavum = () => {
     if (!containerRef.current) return;
-    
-    const gameArea = document.getElementById('game-area');
+
+    const gameArea = document.getElementById("game-area");
     if (!gameArea) return;
-    
+
     const maxTop = gameArea.clientHeight - 150;
     const maxLeft = gameArea.clientWidth - 150;
-    
+
     const top = Math.random() * Math.max(0, maxTop);
     const left = Math.random() * Math.max(0, maxLeft);
-    
+
     setPosition({ top, left });
+
+    // 🔊 PLAY MOVE SOUND
+    if (moveSoundRef.current) {
+      moveSoundRef.current.currentTime = 0; // restart sound
+      moveSoundRef.current.play().catch(() => {});
+    }
   };
 
   const handleFinish = async () => {
@@ -262,19 +276,11 @@ export default function CatchKavum({ player }) {
       const rect = e.target.getBoundingClientRect();
       const centerX = rect.left + rect.width / 2;
       const centerY = rect.top + rect.height / 2;
-      
+
       // Calculate combo
       const now = Date.now();
-      if (now - lastCatchTime < 500) {
-        setCombo((prev) => prev + 1);
-      } else {
-        setCombo(0);
-      }
-      setLastCatchTime(now);
 
-      // Update score with combo bonus
-      const bonusPoints = combo > 0 ? Math.floor(combo / 2) : 0;
-      setScore((prev) => prev + 1 + bonusPoints);
+      setScore((prev) => prev + 1);
 
       // Visual effects
       setCatchEffect(true);
@@ -322,16 +328,16 @@ export default function CatchKavum({ player }) {
     setCountdown(3);
     setGameStarted(false);
     setStartClicked(false);
-    setCombo(0);
     setParticles([]);
   };
 
   return (
     <div
-      ref={containerRef}
+      
       style={{
         minHeight: "100vh",
-        background: "radial-gradient(circle at 30% 30%, #8B4513, #D2691E, #CD853F)",
+        background:
+          "radial-gradient(circle at 30% 30%, #8B4513, #D2691E, #CD853F)",
         padding: "30px 16px",
         display: "flex",
         justifyContent: "center",
@@ -369,8 +375,8 @@ export default function CatchKavum({ player }) {
           top: "10%",
           left: "5%",
           fontSize: 48,
-          '--duration': '12s',
-          '--delay': '0s',
+          "--duration": "12s",
+          "--delay": "0s",
           transform: `translate(${mousePosition.x * 0.3}px, ${mousePosition.y * 0.3}px)`,
         }}
       >
@@ -382,8 +388,8 @@ export default function CatchKavum({ player }) {
           top: "80%",
           right: "5%",
           fontSize: 36,
-          '--duration': '15s',
-          '--delay': '2s',
+          "--duration": "15s",
+          "--delay": "2s",
           transform: `translate(${mousePosition.x * 0.5}px, ${mousePosition.y * 0.5}px)`,
         }}
       >
@@ -395,8 +401,8 @@ export default function CatchKavum({ player }) {
           top: "20%",
           right: "15%",
           fontSize: 42,
-          '--duration': '10s',
-          '--delay': '1s',
+          "--duration": "10s",
+          "--delay": "1s",
           transform: `translate(${mousePosition.x * 0.4}px, ${mousePosition.y * 0.4}px)`,
         }}
       >
@@ -408,8 +414,8 @@ export default function CatchKavum({ player }) {
           bottom: "15%",
           left: "10%",
           fontSize: 40,
-          '--duration': '14s',
-          '--delay': '3s',
+          "--duration": "14s",
+          "--delay": "3s",
           transform: `translate(${mousePosition.x * 0.6}px, ${mousePosition.y * 0.6}px)`,
         }}
       >
@@ -421,8 +427,8 @@ export default function CatchKavum({ player }) {
           top: "40%",
           right: "20%",
           fontSize: 32,
-          '--duration': '11s',
-          '--delay': '1.5s',
+          "--duration": "11s",
+          "--delay": "1.5s",
           transform: `translate(${mousePosition.x * 0.2}px, ${mousePosition.y * 0.2}px)`,
         }}
       >
@@ -469,13 +475,22 @@ export default function CatchKavum({ player }) {
                 left: -10,
                 width: 60,
                 height: 60,
-                background: "radial-gradient(circle, rgba(255,215,0,0.2) 0%, transparent 70%)",
+                background:
+                  "radial-gradient(circle, rgba(255,215,0,0.2) 0%, transparent 70%)",
                 borderRadius: "50%",
                 animation: "spinSlow 15s linear infinite",
               }}
             />
-            
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 10, marginBottom: 10 }}>
+
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: 10,
+                marginBottom: 10,
+              }}
+            >
               <StarOutlined style={{ color: "#FFD700", fontSize: 24 }} />
               <span style={{ color: "#8B4513", fontWeight: 600, fontSize: 16 }}>
                 කැවුම් අල්ලීමේ ක්‍රීඩාව
@@ -525,11 +540,12 @@ export default function CatchKavum({ player }) {
                 border: "2px solid #FFD700",
                 borderRadius: 24,
                 padding: "24px 20px",
-                marginBottom: 20,  display: "flex",
-  flexDirection: "column",
-  alignItems: "center",
-  justifyContent: "center",
-  textAlign: "center",
+                marginBottom: 20,
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                justifyContent: "center",
+                textAlign: "center",
               }}
             >
               <div
@@ -582,12 +598,15 @@ export default function CatchKavum({ player }) {
                   transition: "all 0.3s ease",
                 }}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.transform = "translateY(-3px) scale(1.02)";
-                  e.currentTarget.style.boxShadow = "0 15px 30px rgba(228,77,46,0.4)";
+                  e.currentTarget.style.transform =
+                    "translateY(-3px) scale(1.02)";
+                  e.currentTarget.style.boxShadow =
+                    "0 15px 30px rgba(228,77,46,0.4)";
                 }}
                 onMouseLeave={(e) => {
                   e.currentTarget.style.transform = "translateY(0) scale(1)";
-                  e.currentTarget.style.boxShadow = "0 10px 24px rgba(228,77,46,0.3)";
+                  e.currentTarget.style.boxShadow =
+                    "0 10px 24px rgba(228,77,46,0.3)";
                 }}
               >
                 ක්‍රීඩාව ආරම්භ කරන්න
@@ -603,11 +622,11 @@ export default function CatchKavum({ player }) {
               style={{
                 padding: "24px 16px",
                 marginBottom: 20,
-                  display: "flex",
-  flexDirection: "column",
-  alignItems: "center",
-  justifyContent: "center",
-  textAlign: "center",
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                justifyContent: "center",
+                textAlign: "center",
               }}
             >
               <h2 style={{ marginBottom: 20, color: "#8B4513" }}>
@@ -723,24 +742,6 @@ export default function CatchKavum({ player }) {
                 >
                   {score}
                 </div>
-
-                {combo > 0 && (
-                  <div
-                    className="combo-text"
-                    style={{
-                      position: "absolute",
-                      top: -10,
-                      right: -10,
-                      background: "#FFD700",
-                      borderRadius: 20,
-                      padding: "4px 8px",
-                      fontSize: 12,
-                      color: "#8B4513",
-                    }}
-                  >
-                    Combo x{combo + 1}!
-                  </div>
-                )}
               </div>
             </motion.div>
           )}
@@ -757,7 +758,8 @@ export default function CatchKavum({ player }) {
                 position: "relative",
                 overflow: "hidden",
                 borderRadius: 24,
-                background: "linear-gradient(180deg, #FFF8E7, #FFE4B5, #DEB887)",
+                background:
+                  "linear-gradient(180deg, #FFF8E7, #FFE4B5, #DEB887)",
                 border: "3px solid #FFD700",
                 boxShadow: "inset 0 4px 20px rgba(0,0,0,0.1)",
                 marginBottom: 16,
@@ -766,7 +768,7 @@ export default function CatchKavum({ player }) {
               <img
                 src={kavum}
                 alt="kavum"
-                className={`kavum-image ${catchEffect ? 'catch-effect' : ''}`}
+                className={`kavum-image ${catchEffect ? "catch-effect" : ""}`}
                 style={{
                   width: 150,
                   position: "absolute",
@@ -794,7 +796,7 @@ export default function CatchKavum({ player }) {
                   style={{
                     left: particle.x,
                     top: particle.y,
-                    '--angle': particle.angle,
+                    "--angle": particle.angle,
                     animationDelay: `${particle.delay}s`,
                   }}
                 />
@@ -818,7 +820,7 @@ export default function CatchKavum({ player }) {
                 animation: "pulseGlow 2s ease-in-out infinite",
               }}
             >
-              කැවුම පනින්න කලින් ඉක්මනින් අල්ලාගන්න! {combo > 0 && `(Combo: +${Math.floor(combo / 2)} bonus)`}
+              කැවුම පනින්න කලින් ඉක්මනින් අල්ලාගන්න!{" "}
             </motion.p>
           )}
 
@@ -835,11 +837,12 @@ export default function CatchKavum({ player }) {
                   borderRadius: 24,
                   padding: "22px 18px",
                   marginTop: 16,
-                  textAlign: "center",  display: "flex",
-  flexDirection: "column",
-  alignItems: "center",
-  justifyContent: "center",
-  textAlign: "center",
+                  textAlign: "center",
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  textAlign: "center",
                 }}
               >
                 <motion.div
@@ -862,8 +865,10 @@ export default function CatchKavum({ player }) {
                     marginBottom: 16,
                   }}
                 >
-                  <div style={{ color: "#8B4513", fontSize: 14, marginBottom: 5 }}>
-                    ඔබගේ අවසන් ලකුණු
+                  <div
+                    style={{ color: "#8B4513", fontSize: 14, marginBottom: 5 }}
+                  >
+                    ඔබ අල්ලාගත් කැවුම් ගණන
                   </div>
                   <h3
                     style={{
@@ -875,35 +880,61 @@ export default function CatchKavum({ player }) {
                   >
                     {score}
                   </h3>
-                  {combo > 0 && (
-                    <div style={{ color: "#8B4513", fontSize: 14 }}>
-                      Combo bonus: +{Math.floor(combo / 2) * combo}
-                    </div>
-                  )}
                 </div>
+                {score === 0 && (
+                  <Button
+                    onClick={restartGame}
+                    style={{
+                      height: 46,
+                      borderRadius: 23,
+                      fontWeight: 700,
+                      border: "2px solid #FFD700",
+                      background: "white",
+                      color: "#8B4513",
+                      transition: "all 0.3s ease",
+                      padding: "0 30px",
+                      marginBottom: 5,
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.transform = "translateY(-2px)";
+                      e.currentTarget.style.boxShadow =
+                        "0 10px 20px rgba(255,215,0,0.3)";
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.transform = "translateY(0)";
+                      e.currentTarget.style.boxShadow = "none";
+                    }}
+                  >
+                    නැවත ක්‍රීඩා කරන්න
+                  </Button>
+                )}
 
                 <Button
-                  onClick={restartGame}
+                  onClick={() => {
+                    navigate("/");
+                  }}
                   style={{
-                    height: 46,
-                    borderRadius: 23,
-                    fontWeight: 700,
-                    border: "2px solid #FFD700",
-                    background: "white",
-                    color: "#8B4513",
-                    transition: "all 0.3s ease",
-                    padding: "0 30px",
+                     height: 48,
+                padding: "0 32px",
+                borderRadius: 30,
+                fontWeight: 700,
+                fontSize: 16,
+                background: "linear-gradient(135deg, #27AE60, #2ECC71)",
+                border: "none",
+                boxShadow: "0 10px 20px rgba(39,174,96,0.3)",
+                transition: "all 0.3s ease",
                   }}
                   onMouseEnter={(e) => {
                     e.currentTarget.style.transform = "translateY(-2px)";
-                    e.currentTarget.style.boxShadow = "0 10px 20px rgba(255,215,0,0.3)";
+                    e.currentTarget.style.boxShadow =
+                      "0 10px 20px rgba(255,215,0,0.3)";
                   }}
                   onMouseLeave={(e) => {
                     e.currentTarget.style.transform = "translateY(0)";
                     e.currentTarget.style.boxShadow = "none";
                   }}
                 >
-                  නැවත ක්‍රීඩා කරන්න
+                  {"මුල් පිටුවට යන්න"}
                 </Button>
               </motion.div>
             )}
@@ -919,15 +950,41 @@ export default function CatchKavum({ player }) {
               opacity: 0.6,
             }}
           >
-            <span style={{ fontSize: 20, animation: "gentleFloat 3s ease-in-out infinite" }}>🍘</span>
-            <span style={{ fontSize: 20, animation: "gentleFloat 3.5s ease-in-out infinite" }}>🎯</span>
-            <span style={{ fontSize: 20, animation: "gentleFloat 4s ease-in-out infinite" }}>✨</span>
-            <span style={{ fontSize: 20, animation: "gentleFloat 2.5s ease-in-out infinite" }}>🌟</span>
+            <span
+              style={{
+                fontSize: 20,
+                animation: "gentleFloat 3s ease-in-out infinite",
+              }}
+            >
+              🍘
+            </span>
+            <span
+              style={{
+                fontSize: 20,
+                animation: "gentleFloat 3.5s ease-in-out infinite",
+              }}
+            >
+              🎯
+            </span>
+            <span
+              style={{
+                fontSize: 20,
+                animation: "gentleFloat 4s ease-in-out infinite",
+              }}
+            >
+              ✨
+            </span>
+            <span
+              style={{
+                fontSize: 20,
+                animation: "gentleFloat 2.5s ease-in-out infinite",
+              }}
+            >
+              🌟
+            </span>
           </div>
         </Card>
       </motion.div>
-
-    
     </div>
   );
 }

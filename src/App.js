@@ -23,7 +23,7 @@ function App() {
 
   return (
     <>
-      <BackgroundMusic />
+      {/* <BackgroundMusic /> */}
       <Routes>
         {/* 🔐 If no player → force to welcome */}
         <Route
