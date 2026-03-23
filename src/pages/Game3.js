@@ -2,38 +2,73 @@ import { Card, Button } from "antd";
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { 
-  GiftOutlined, 
+import {
   CheckCircleOutlined,
-  StarOutlined,
-  FireOutlined,
-  BulbOutlined
+  CloseCircleOutlined,
+  ClockCircleOutlined,
 } from "@ant-design/icons";
 import lampsImage from "../assets/avurudu-lamps.jpeg";
-import GameEndModal from "../components/GameEndModal";
-import WINWAYLogo from "../assets/WIN WAY English Logo- PNG.png";
 
+import { useLanguage } from "../context/LanguageContext";
+import WINWAYLogo from "../assets/WIN WAY English Logo- PNG.png";
+import AwuruduGames from "../assets/Aluth Awurudu Games.png";
 // API
 import { submitHiddenLampsGame } from "../api/gameApi";
 
 export default function Game3({ player }) {
   const navigate = useNavigate();
+  const { language } = useLanguage();
+
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const containerRef = useRef(null);
 
-  const [showModal, setShowModal] = useState(false);
   const [selected, setSelected] = useState(null);
   const [animateIn, setAnimateIn] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [imageHover, setImageHover] = useState(false);
-  const [showHint, setShowHint] = useState(false);
+
+  const [finished, setFinished] = useState(false);
+  const [isCorrect, setIsCorrect] = useState(false);
+  const [timeTaken, setTimeTaken] = useState("0.00");
+
+  const text = {
+    si: {
+      title: "පහන් ගණන හොයමු",
+      question: "රූපයේ ඇති පහන් ගණන කීයද?",
+      back: "ආපසු",
+      submit: "පිළිතුර යවන්න",
+      correct: "පිළිතුර නිවැරදියි",
+      wrong: "පිළිතුර වැරදියි",
+      answerCount: "පහන් ගණන",
+      timeTaken: "ගතවූ කාලය",
+      playAgain: "නැවත ක්‍රීඩා කරන්න",
+      goHome: "මුල් පිටුවට යන්න",
+      guest: "Guest",
+      notAvailable: "N/A",
+    },
+    ta: {
+      title: "விளக்குகளின் எண்ணிக்கையை கண்டுபிடிப்போம்",
+      question: "படத்தில் உள்ள விளக்குகளின் எண்ணிக்கை எவ்வளவு?",
+      back: "பின்னுக்கு",
+      submit: "பதிலை அனுப்பவும்",
+      correct: "பதில் சரியானது",
+      wrong: "பதில் தவறானது",
+      answerCount: "விளக்குகளின் எண்ணிக்கை",
+      timeTaken: "எடுத்த நேரம்",
+      playAgain: "மீண்டும் விளையாடுங்கள்",
+      goHome: "முகப்பு பக்கத்துக்கு செல்லவும்",
+      guest: "Guest",
+      notAvailable: "N/A",
+    },
+  };
+
+  const t = text[language] || text.si;
 
   const options = ["3", "4", "5", "6"];
-  const correctAnswer = "4";
+  const correctAnswer = "6";
 
   const [startTime, setStartTime] = useState(null);
 
-  // Track mouse for parallax effect
   useEffect(() => {
     const handleMouseMove = (e) => {
       if (containerRef.current) {
@@ -45,8 +80,8 @@ export default function Game3({ player }) {
       }
     };
 
-    window.addEventListener('mousemove', handleMouseMove);
-    return () => window.removeEventListener('mousemove', handleMouseMove);
+    window.addEventListener("mousemove", handleMouseMove);
+    return () => window.removeEventListener("mousemove", handleMouseMove);
   }, []);
 
   useEffect(() => {
@@ -54,7 +89,6 @@ export default function Game3({ player }) {
     setStartTime(Date.now());
   }, []);
 
-  // Inject animations
   useEffect(() => {
     const styleId = "game3-festival-animations";
     if (document.getElementById(styleId)) return;
@@ -122,15 +156,6 @@ export default function Game3({ player }) {
         }
       }
 
-      @keyframes shimmer {
-        0% {
-          background-position: -1000px 0;
-        }
-        100% {
-          background-position: 1000px 0;
-        }
-      }
-
       .game-card {
         animation: floatIn 0.7s ease forwards;
       }
@@ -174,40 +199,32 @@ export default function Game3({ player }) {
         left: 100%;
       }
 
-      .pulse-glow {
-        animation: pulseGlow 2s ease-in-out infinite;
-      }
-
       .flicker {
         animation: flicker 3s ease-in-out infinite;
-      }
-
-      .lamp-icon {
-        animation: flicker 2s ease-in-out infinite;
       }
     `;
     document.head.appendChild(style);
   }, []);
 
   const handleFinish = async () => {
-    if (submitting) return;
+    if (submitting || !selected) return;
 
     setSubmitting(true);
 
     const finishTime = Date.now();
-    const timeTaken = ((finishTime - startTime) / 1000).toFixed(2);
-
-    const isCorrect = selected === correctAnswer;
-    const score = isCorrect ? 1 : 0;
+    const totalTime = ((finishTime - startTime) / 1000).toFixed(2);
+    const answerCorrect = selected === correctAnswer;
+    const score = answerCorrect ? 1 : 0;
 
     const payload = {
-      name: player?.name || "Guest",
-      phone: player?.phone || "N/A",
+      name: player?.name || t.guest,
+      phone: player?.phone || t.notAvailable,
       selectedAnswer: selected,
       correctAnswer,
-      isCorrect,
+      isCorrect: answerCorrect,
       score,
-      time: timeTaken,
+      time: totalTime,
+      language,
     };
 
     try {
@@ -217,7 +234,9 @@ export default function Game3({ player }) {
       console.log("Save failed");
     }
 
-    setShowModal(true);
+    setIsCorrect(answerCorrect);
+    setTimeTaken(totalTime);
+    setFinished(true);
     setSubmitting(false);
   };
 
@@ -226,12 +245,22 @@ export default function Game3({ player }) {
     handleFinish();
   };
 
+  const restartGame = () => {
+    setSelected(null);
+    setFinished(false);
+    setIsCorrect(false);
+    setTimeTaken("0.00");
+    setSubmitting(false);
+    setStartTime(Date.now());
+  };
+
   return (
     <div
-      
+      ref={containerRef}
       style={{
         minHeight: "100vh",
-        background: "radial-gradient(circle at 30% 30%, #FFE4B5, #DEB887, #8B4513)",
+        background:
+          "radial-gradient(circle at 30% 30%, #FFE4B5, #DEB887, #8B4513)",
         padding: "30px 16px",
         opacity: animateIn ? 1 : 0,
         transition: "all 0.5s ease",
@@ -242,7 +271,6 @@ export default function Game3({ player }) {
         overflow: "hidden",
       }}
     >
-      {/* Animated Background Pattern */}
       <div
         style={{
           position: "absolute",
@@ -264,74 +292,76 @@ export default function Game3({ player }) {
         }}
       />
 
-      {/* Floating Decorative Elements */}
       <div
         className="floating-element"
         style={{
           top: "10%",
           left: "5%",
           fontSize: 48,
-          '--duration': '12s',
-          '--delay': '0s',
+          "--duration": "12s",
+          "--delay": "0s",
           transform: `translate(${mousePosition.x * 0.3}px, ${mousePosition.y * 0.3}px)`,
         }}
       >
         🪔
       </div>
+
       <div
         className="floating-element flicker"
         style={{
           top: "80%",
           right: "5%",
           fontSize: 36,
-          '--duration': '15s',
-          '--delay': '2s',
+          "--duration": "15s",
+          "--delay": "2s",
           transform: `translate(${mousePosition.x * 0.5}px, ${mousePosition.y * 0.5}px)`,
         }}
       >
         🏮
       </div>
+
       <div
         className="floating-element"
         style={{
           top: "20%",
           right: "15%",
           fontSize: 42,
-          '--duration': '10s',
-          '--delay': '1s',
+          "--duration": "10s",
+          "--delay": "1s",
           transform: `translate(${mousePosition.x * 0.4}px, ${mousePosition.y * 0.4}px)`,
         }}
       >
         🌸
       </div>
+
       <div
         className="floating-element flicker"
         style={{
           bottom: "15%",
           left: "10%",
           fontSize: 40,
-          '--duration': '14s',
-          '--delay': '3s',
+          "--duration": "14s",
+          "--delay": "3s",
           transform: `translate(${mousePosition.x * 0.6}px, ${mousePosition.y * 0.6}px)`,
         }}
       >
         🕯️
       </div>
+
       <div
         className="floating-element"
         style={{
           top: "30%",
           right: "25%",
           fontSize: 32,
-          '--duration': '11s',
-          '--delay': '1.5s',
+          "--duration": "11s",
+          "--delay": "1.5s",
           transform: `translate(${mousePosition.x * 0.2}px, ${mousePosition.y * 0.2}px)`,
         }}
       >
         ✨
       </div>
 
-      {/* Main Card */}
       <motion.div
         initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
@@ -355,7 +385,6 @@ export default function Game3({ player }) {
           }}
           bodyStyle={{ padding: 32 }}
         >
-          {/* Decorative Header */}
           <div
             style={{
               marginBottom: 24,
@@ -371,18 +400,21 @@ export default function Game3({ player }) {
                 left: -10,
                 width: 60,
                 height: 60,
-                background: "radial-gradient(circle, rgba(255,215,0,0.2) 0%, transparent 70%)",
+                background:
+                  "radial-gradient(circle, rgba(255,215,0,0.2) 0%, transparent 70%)",
                 borderRadius: "50%",
                 animation: "spinSlow 15s linear infinite",
               }}
             />
-          
-          
 
-                  <div
+                   <div
               style={{
                 display: "flex",
-                justifyContent: "center",
+                justifyContent: "space-evenly",
+                alignItems: "center",
+                width: "100%",
+                maxWidth: 420,
+                margin: "0 auto",
                 marginBottom: 0,
               }}
             >
@@ -394,14 +426,25 @@ export default function Game3({ player }) {
                 transition={{ duration: 0.65 }}
                 style={{
                   width: 120,
-                  maxWidth: "80%",
                   height: "auto",
                   objectFit: "contain",
                   filter: "drop-shadow(0 8px 18px rgba(139, 69, 19, 0.18))",
                 }}
               />
+
+              <motion.img
+                src={AwuruduGames}
+                alt="Awurudu Games"
+                initial={{ opacity: 0, scale: 0.85, y: -10 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                transition={{ duration: 0.65 }}
+                style={{
+                  width: 180,
+                  height: "auto",
+                  objectFit: "contain",
+                }}
+              />
             </div>
-      
             <h2
               style={{
                 margin: "12px 0 8px",
@@ -414,208 +457,341 @@ export default function Game3({ player }) {
                 WebkitTextFillColor: "transparent",
               }}
             >
-              පහන් ගණන හොයමු
+              {t.title}
             </h2>
-
-          
-          
           </div>
 
-          {/* QUESTION */}
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.2 }}
-            style={{
-              background: "linear-gradient(135deg, #FFF8E7, #FFEBCD)",
-              border: "2px solid #FFD700",
-              borderRadius: 24,
-              padding: "20px 18px",
-              marginBottom: 20,
-            }}
-          >
-            <h3
-              style={{
-                margin: 0,
-                color: "#5c3b14",
-                fontSize: 17,
-                fontWeight: 700,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                gap: 10,
-              }}
-            >
-              රූපයේ ඇති පහන් ගණන කීයද?
-            </h3>
-          </motion.div>
-
-          {/* IMAGE */}
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.3 }}
-            className="image-container"
-            style={{
-              background: "linear-gradient(135deg, #FFF8E7, #FFE4B5)",
-              border: "3px solid #FFD700",
-              borderRadius: 24,
-              padding: 12,
-              marginBottom: 24,
-              boxShadow: "0 15px 30px rgba(0,0,0,0.1)",
-            }}
-            onMouseEnter={() => setImageHover(true)}
-            onMouseLeave={() => setImageHover(false)}
-          >
-            <img
-              src={lampsImage}
-              alt="lamps"
-              style={{
-                width: "100%",
-                borderRadius: 16,
-                transform: imageHover ? "scale(1.05)" : "scale(1)",
-                transition: "all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)",
-                boxShadow: imageHover ? "0 20px 40px rgba(139,69,19,0.3)" : "none",
-              }}
-            />
-            
-         
-            
-            
-          </motion.div>
-
-          {/* OPTIONS */}
-          <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-            {options.map((opt, i) => {
-              const isActive = selected === opt;
-
-              return (
-                <motion.div
-                  key={i}
-                  initial={{ opacity: 0, x: -30 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.4 + i * 0.1 }}
+          {!finished ? (
+            <>
+              <motion.div
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: 0.2 }}
+                style={{
+                  background: "linear-gradient(135deg, #FFF8E7, #FFEBCD)",
+                  border: "2px solid #FFD700",
+                  borderRadius: 24,
+                  padding: "20px 18px",
+                  marginBottom: 20,
+                }}
+              >
+                <h3
+                  style={{
+                    margin: 0,
+                    color: "#5c3b14",
+                    fontSize: 17,
+                    fontWeight: 700,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    gap: 10,
+                  }}
                 >
-                  <Button
-                    className="option-button"
-                    block
-                    onClick={() => setSelected(opt)}
+                  {t.question}
+                </h3>
+              </motion.div>
+
+              <motion.div
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: 0.3 }}
+                className="image-container"
+                style={{
+                  background: "linear-gradient(135deg, #FFF8E7, #FFE4B5)",
+                  border: "3px solid #FFD700",
+                  borderRadius: 24,
+                  padding: 12,
+                  marginBottom: 24,
+                  boxShadow: "0 15px 30px rgba(0,0,0,0.1)",
+                }}
+                onMouseEnter={() => setImageHover(true)}
+                onMouseLeave={() => setImageHover(false)}
+              >
+                <img
+                  src={lampsImage}
+                  alt="lamps"
+                  style={{
+                    width: "100%",
+                    borderRadius: 16,
+                    transform: imageHover ? "scale(1.05)" : "scale(1)",
+                    transition:
+                      "all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)",
+                    boxShadow: imageHover
+                      ? "0 20px 40px rgba(139,69,19,0.3)"
+                      : "none",
+                  }}
+                />
+              </motion.div>
+
+              <div
+                style={{ display: "flex", flexDirection: "column", gap: 12 }}
+              >
+                {options.map((opt, i) => {
+                  const isActive = selected === opt;
+
+                  return (
+                    <motion.div
+                      key={i}
+                      initial={{ opacity: 0, x: -30 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: 0.4 + i * 0.1 }}
+                    >
+                      <Button
+                        className="option-button"
+                        block
+                        onClick={() => setSelected(opt)}
+                        style={{
+                          height: 60,
+                          borderRadius: 15,
+                          fontWeight: 600,
+                          fontSize: 14,
+                          transition: "all 0.3s ease",
+                          transform: isActive ? "scale(1.02)" : "scale(1)",
+                          border: isActive
+                            ? "3px solid #FFD700"
+                            : "2px solid #f0f0f0",
+                          background: isActive
+                            ? "linear-gradient(135deg, #FFF9E6, #FFE4B5)"
+                            : "white",
+                          color: isActive ? "#8B4513" : "#666",
+                          boxShadow: isActive
+                            ? "0 15px 30px rgba(255,215,0,0.3)"
+                            : "0 8px 15px rgba(0,0,0,0.05)",
+                        }}
+                      >
+                        {opt}
+                      </Button>
+                    </motion.div>
+                  );
+                })}
+              </div>
+
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.8 }}
+                style={{
+                  marginTop: 28,
+                  display: "flex",
+                  gap: 12,
+                }}
+              >
+                <Button
+                  onClick={() => navigate("/")}
+                  style={{
+                    height: 56,
+                    borderRadius: 30,
+                    border: "2px solid #d41717",
+                    background: "linear-gradient(135deg, #FFF8E1, #d41717b7)",
+                    color: "#554646",
+                    fontWeight: 700,
+                    fontSize: 15,
+                    boxShadow: "0 10px 20px rgba(212,160,23,0.18)",
+                    transition: "all 0.3s ease",
+                  }}
+                >
+                  {t.back}
+                </Button>
+
+                <Button
+                  type="primary"
+                  block
+                  disabled={!selected || submitting}
+                  loading={submitting}
+                  onClick={handleSubmit}
+                  style={{
+                    height: 56,
+                    borderRadius: 30,
+                    background: selected
+                      ? "linear-gradient(135deg, #27AE60, #2ECC71)"
+                      : "#f0f0f0",
+                    border: "none",
+                    fontWeight: 800,
+                    fontSize: 15,
+                    boxShadow: selected
+                      ? "0 15px 30px rgba(39,174,96,0.3)"
+                      : "none",
+                    transition: "all 0.3s ease",
+                    color: selected ? "white" : "#999",
+                  }}
+                >
+                  <CheckCircleOutlined /> {t.submit}
+                </Button>
+              </motion.div>
+            </>
+          ) : (
+            <AnimatePresence>
+              <motion.div
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.4 }}
+              >
+                <div
+                  style={{
+                    background: isCorrect
+                      ? "linear-gradient(135deg, #F1FFF3, #DDF7E5)"
+                      : "linear-gradient(135deg, #FFF3F3, #FFE0E0)",
+                    border: isCorrect
+                      ? "3px solid #2ECC71"
+                      : "3px solid #FF4D4F",
+                    boxShadow: isCorrect
+                      ? "0 18px 40px rgba(46, 204, 113, 0.18)"
+                      : "0 18px 40px rgba(255, 77, 79, 0.18)",
+                    borderRadius: 24,
+                    padding: "22px 18px",
+                    textAlign: "center",
+                  }}
+                >
+                  <div
                     style={{
-                      height: 60,
-                      borderRadius: 15,
-                   fontWeight: 600,
-                        fontSize: 14,
-                      transition: "all 0.3s ease",
-                      transform: isActive ? "scale(1.02)" : "scale(1)",
-                      border: isActive
-                        ? "3px solid #FFD700"
-                        : "2px solid #f0f0f0",
-                      background: isActive
-                        ? "linear-gradient(135deg, #FFF9E6, #FFE4B5)"
-                        : "white",
-                      color: isActive ? "#8B4513" : "#666",
-                      boxShadow: isActive
-                        ? "0 15px 30px rgba(255,215,0,0.3)"
-                        : "0 8px 15px rgba(0,0,0,0.05)",
+                      display: "flex",
+                      flexDirection: "column",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      marginBottom: 20,
                     }}
                   >
-                    {opt}
-                  </Button>
-                </motion.div>
-              );
-            })}
-          </div>
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.8 }}
-            style={{
-              marginTop: 28,
-              display: "flex",
-              gap: 12,
-            }}
-          >
-            <Button
-              onClick={() => navigate("/")}
-              style={{
-                height: 56,
-                borderRadius: 30,
-         
-                border: "2px solid #d41717",
-                background: "linear-gradient(135deg, #FFF8E1, #d41717b7)",
-                color: "#554646",
-                fontWeight: 700,
-                fontSize: 15,
-                boxShadow: "0 10px 20px rgba(212,160,23,0.18)",
-                transition: "all 0.3s ease",
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.transform = "translateY(-3px) scale(1.02)";
-                e.currentTarget.style.boxShadow =
-                  "0 16px 28px rgba(212,160,23,0.28)";
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.transform = "translateY(0) scale(1)";
-                e.currentTarget.style.boxShadow =
-                  "0 10px 20px rgba(212,160,23,0.18)";
-              }}
-            >
-              ආපසු
-            </Button>
+                    <div
+                      style={{
+                        width: 100,
+                        height: 100,
+                        borderRadius: "50%",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        background: isCorrect
+                          ? "linear-gradient(135deg, #E8FFF1, #C8F7DC)"
+                          : "linear-gradient(135deg, #FFF1F1, #FFD6D6)",
+                        boxShadow: isCorrect
+                          ? "0 14px 30px rgba(46, 204, 113, 0.22)"
+                          : "0 14px 30px rgba(255, 77, 79, 0.22)",
+                        marginBottom: isCorrect ? 12 : 20,
+                      }}
+                    >
+                      {isCorrect ? (
+                        <CheckCircleOutlined
+                          style={{
+                            fontSize: 100,
+                            color: "#1E8449",
+                          }}
+                        />
+                      ) : (
+                        <CloseCircleOutlined
+                          style={{
+                            fontSize: 100,
+                            color: "#C62828",
+                          }}
+                        />
+                      )}
+                    </div>
 
-            <Button
-              type="primary"
-              block
-              disabled={!selected || submitting}
-              loading={submitting}
-              onClick={handleSubmit}
-              style={{
-                height: 56,
-                borderRadius: 30,
-                background: selected
-                  ? "linear-gradient(135deg, #27AE60, #2ECC71)"
-                  : "#f0f0f0",
-                border: "none",
-                fontWeight: 800,
-                fontSize: 15,
-                boxShadow: selected
-                  ? "0 15px 30px rgba(39,174,96,0.3)"
-                  : "none",
-                transition: "all 0.3s ease",
-                color: selected ? "white" : "#999",
-              }}
-              onMouseEnter={(e) => {
-                if (selected) {
-                  e.currentTarget.style.transform =
-                    "translateY(-3px) scale(1.02)";
-                  e.currentTarget.style.boxShadow =
-                    "0 20px 40px rgba(39,174,96,0.4)";
-                }
-              }}
-              onMouseLeave={(e) => {
-                if (selected) {
-                  e.currentTarget.style.transform = "translateY(0) scale(1)";
-                  e.currentTarget.style.boxShadow =
-                    "0 15px 30px rgba(39,174,96,0.3)";
-                }
-              }}
-            >
-              <CheckCircleOutlined /> පිළිතුර යවන්න
-            </Button>
-          </motion.div>
+                    {isCorrect && (
+                      <div
+                        style={{
+                          fontSize: 24,
+                          fontWeight: 800,
+                          color: "#1E8449",
+                          marginBottom: 10,
+                          lineHeight: 1.3,
+                        }}
+                      >
+                        {t.correct}
+                      </div>
+                    )}
+                    {!isCorrect && (
+                      <div
+                        style={{
+                          fontSize: 24,
+                          fontWeight: 800,
+                          color: "#C62828",
+                          marginBottom: 10,
+                          lineHeight: 1.3,
+                        }}
+                      >
+                        {t.wrong}
+                      </div>
+                    )}
+                  </div>
+
+                  <div
+                    style={{
+                      fontSize: 24,
+                      fontWeight: 800,
+                      color: isCorrect ? "#1E8449" : "#C62828",
+                      marginBottom: 20,
+                      lineHeight: 1.3,
+                    }}
+                  >
+                    {t.answerCount} {correctAnswer}
+                  </div>
+
+                  {isCorrect && (
+                    <div
+                      style={{
+                        maxWidth: 260,
+                        margin: "0 auto 20px",
+                        background: "linear-gradient(135deg, #E8F5E9, #C8E6C9)",
+                        padding: "18px",
+                        borderRadius: 20,
+                        boxShadow: "0 10px 24px rgba(46, 125, 50, 0.12)",
+                      }}
+                    >
+                      <div
+                        style={{
+                          color: "#2E7D32",
+                          fontSize: 14,
+                          marginBottom: 6,
+                          fontWeight: 700,
+                        }}
+                      >
+                        <ClockCircleOutlined /> {t.timeTaken}
+                      </div>
+                      <div
+                        style={{
+                          color: "#2E7D32",
+                          fontSize: 30,
+                          fontWeight: 800,
+                        }}
+                      >
+                        {timeTaken}s
+                      </div>
+                    </div>
+                  )}
+
+                  <div
+                    style={{
+                      display: "flex",
+                      gap: 12,
+                      flexWrap: "wrap",
+                      justifyContent: "center",
+                    }}
+                  >
         
         
-        
-        
+
+                    <Button
+                      onClick={() => navigate("/")}
+                      style={{
+                        height: 48,
+                        padding: "0 32px",
+                        borderRadius: 30,
+                        fontWeight: 700,
+                        fontSize: 16,
+                        background: "linear-gradient(135deg, #27AE60, #2ECC71)",
+                        border: "none",
+                        color: "white",
+                        boxShadow: "0 10px 20px rgba(39,174,96,0.3)",
+                      }}
+                    >
+                      {t.goHome}
+                    </Button>
+                  </div>
+                </div>
+              </motion.div>
+            </AnimatePresence>
+          )}
         </Card>
       </motion.div>
-
-      <GameEndModal
-        open={showModal}
-        gameName="සැඟවුණු පහන් හොයමු
-"
-        onClose={() => navigate("/")}
-      />
     </div>
   );
 }

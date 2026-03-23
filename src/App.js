@@ -11,44 +11,127 @@ import CatchKavum from "./pages/CatchKavum";
 import BreakPot from "./pages/BreakPot";
 import Welcome from "./pages/Welcome";
 import BackgroundMusic from "./components/BackgroundMusic";
+import { LanguageProvider } from "./context/LanguageContext";
+import { AudioProvider } from "./context/AudioContext.js";
 
-function App() {
-  const [player, setPlayer] = useState(null);
-
-  // ✅ Load player from localStorage on refresh
-  useEffect(() => {
-    const saved = localStorage.getItem("player");
-    if (saved) setPlayer(JSON.parse(saved));
-  }, []);
-
+function AppRoutes({ player, setPlayer }) {
   return (
     <>
       {/* <BackgroundMusic /> */}
+
       <Routes>
-        {/* 🔐 If no player → force to welcome */}
         <Route
           path="/"
           element={
             player ? (
               <GamesHome player={player} />
             ) : (
-              <GamesHome player={player} />
-              //  <Navigate to="/welcome" />
+              <Navigate to="/welcome" replace />
             )
           }
         />
 
         <Route path="/welcome" element={<Welcome setPlayer={setPlayer} />} />
 
-        <Route path="/spin" element={<SpinWheel player={player} />} />
-        <Route path="/game1" element={<Game1 player={player} />} />
-        <Route path="/game2" element={<Game2 player={player} />} />
-        <Route path="/game3" element={<Game3 player={player} />} />
-        <Route path="/rabana" element={<RabanaGame player={player} />} />
-        <Route path="/kavum" element={<CatchKavum player={player} />} />
-        <Route path="/break" element={<BreakPot player={player} />} />
+        <Route
+          path="/spin"
+          element={
+            player ? (
+              <SpinWheel player={player} />
+            ) : (
+              <Navigate to="/welcome" replace />
+            )
+          }
+        />
+
+        <Route
+          path="/game1"
+          element={
+            player ? (
+              <Game1 player={player} />
+            ) : (
+              <Navigate to="/welcome" replace />
+            )
+          }
+        />
+
+        <Route
+          path="/game2"
+          element={
+            player ? (
+              <Game2 player={player} />
+            ) : (
+              <Navigate to="/welcome" replace />
+            )
+          }
+        />
+
+        <Route
+          path="/game3"
+          element={
+            player ? (
+              <Game3 player={player} />
+            ) : (
+              <Navigate to="/welcome" replace />
+            )
+          }
+        />
+
+        <Route
+          path="/rabana"
+          element={
+            player ? (
+              <RabanaGame player={player} />
+            ) : (
+              <Navigate to="/welcome" replace />
+            )
+          }
+        />
+
+        <Route
+          path="/kavum"
+          element={
+            player ? (
+              <CatchKavum player={player} />
+            ) : (
+              <Navigate to="/welcome" replace />
+            )
+          }
+        />
+
+        <Route
+          path="/break"
+          element={
+            player ? (
+              <BreakPot player={player} />
+            ) : (
+              <Navigate to="/welcome" replace />
+            )
+          }
+        />
       </Routes>
     </>
+  );
+}
+
+function App() {
+  const [player, setPlayer] = useState(null);
+
+  useEffect(() => {
+    const saved = localStorage.getItem("player");
+    if (saved) {
+      setPlayer(JSON.parse(saved));
+    }
+  }, []);
+
+  return (
+    <LanguageProvider>
+      <LanguageProvider>
+        <AudioProvider>
+          <AppRoutes player={player} setPlayer={setPlayer} />
+        </AudioProvider>
+      </LanguageProvider>
+    </LanguageProvider>
   );
 }
 

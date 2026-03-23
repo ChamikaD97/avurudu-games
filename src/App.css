@@ -58,4 +58,7 @@
   50% { transform: translateX(3px); }
   75% { transform: translateX(-3px); }
   100% { transform: translateX(0); }
+}html::-webkit-scrollbar,
+body::-webkit-scrollbar {
+  display: none;              /* Chrome, Safari, Edge */
 }

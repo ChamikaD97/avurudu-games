@@ -1,22 +1,32 @@
-import { Card, Input, Button, message } from "antd";
+import { Card, Input, Button, message, Segmented, Slider } from "antd";
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { UserOutlined, PhoneOutlined, SafetyOutlined } from "@ant-design/icons";
+import {
+  UserOutlined,
+  PhoneOutlined,
+  SafetyOutlined,
+  GlobalOutlined,
+  SoundOutlined,
+  AudioMutedOutlined,
+} from "@ant-design/icons";
+import { useLanguage } from "../context/LanguageContext";
 import "./Welcome.css";
 import WINWAYLogo from "../assets/WIN WAY English Logo- PNG.png";
+import AwuruduGames from "../assets/Aluth Awurudu Games.png";
 import Ada from "../assets/All lotteries/Ada Sampatha - Fri.jpg";
 import Dana from "../assets/All lotteries/DN- FRI.png";
 import Govi from "../assets/All lotteries/GS- FRI.png";
-
 import Handa from "../assets/All lotteries/H- SAT.png";
 import Mega from "../assets/All lotteries/MP- WED.png";
 import Maha from "../assets/All lotteries/MS- FRI.png";
 import Jaya from "../assets/All lotteries/Jaya - Fri.jpg";
-
+import { useAudio } from "../context/AudioContext";
+import { checkOrLoginPlayer } from "../api/gameApi";
 export default function Welcome({ setPlayer }) {
   const navigate = useNavigate();
   const containerRef = useRef(null);
+  const { language, changeLanguage, t } = useLanguage();
 
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const [name, setName] = useState("");
@@ -24,7 +34,7 @@ export default function Welcome({ setPlayer }) {
   const [loading, setLoading] = useState(false);
   const [nameFocused, setNameFocused] = useState(false);
   const [mobileFocused, setMobileFocused] = useState(false);
-
+  const { isMuted, toggleMute, volume, setVolume } = useAudio();
   useEffect(() => {
     const handleMouseMove = (e) => {
       if (!containerRef.current) return;
@@ -91,15 +101,15 @@ export default function Welcome({ setPlayer }) {
       @keyframes floatLottery {
         0% {
           transform: translateY(0px) rotate(0deg);
-          opacity: 0.5;
+          opacity: 1;
         }
         50% {
           transform: translateY(-10px) rotate(3deg);
-          opacity: 0.5;
+          opacity: 1;
         }
         100% {
           transform: translateY(0px) rotate(0deg);
-          opacity: 0.6;
+          opacity: 1;
         }
       }
 
@@ -207,15 +217,6 @@ export default function Welcome({ setPlayer }) {
         transform: translateY(1px) scale(0.985) !important;
       }
 
-      .reset-link {
-        transition: all 0.3s ease !important;
-      }
-
-      .reset-link:hover {
-        transform: translateY(-2px);
-        text-shadow: 0 5px 10px rgba(255, 77, 79, 0.25);
-      }
-
       .title-shimmer {
         background: linear-gradient(
           90deg,
@@ -265,19 +266,20 @@ export default function Welcome({ setPlayer }) {
         border-radius: 10px;
         z-index: 3;
       }
-.card-content {
-  position: relative;
-  z-index: 2;
-}
-  .card-lottery-deco {
-  position: absolute;
-  pointer-events: none;
-  z-index: 1;
-  opacity: 1;
 
-animation: floatLottery 2s ease-in-out infinite;  
-filter: drop-shadow(0 8px 14px rgba(0, 0, 0, 0.18));
-}
+      .card-content {
+        position: relative;
+        z-index: 2;
+      }
+
+      .card-lottery-deco {
+        position: absolute;
+        pointer-events: none;
+        z-index: 1;
+        opacity: 0.5;
+        filter: drop-shadow(0 8px 14px rgba(0, 0, 0, 0.18));
+      }
+
       .card-lucky-ball {
         position: absolute;
         width: 26px;
@@ -296,10 +298,29 @@ filter: drop-shadow(0 8px 14px rgba(0, 0, 0, 0.18));
         animation: softBlink 2.8s ease-in-out infinite;
       }
 
+      .language-wrap .ant-segmented {
+        background: rgba(255,255,255,0.9) !important;
+        border: 2px solid #ffd76a !important;
+        border-radius: 999px !important;
+        padding: 4px !important;
+        box-shadow: 0 8px 20px rgba(255, 193, 7, 0.14);
+      }
+
+      .language-wrap .ant-segmented-item {
+        border-radius: 999px !important;
+        font-weight: 700;
+        color: #8b4513 !important;
+        min-width: 95px;
+      }
+
+      .language-wrap .ant-segmented-item-selected {
+        background: linear-gradient(135deg, #fff1b8, #ffd666) !important;
+        color: #7a3d00 !important;
+      }
+
       @media (max-width: 768px) {
         .card-lottery-deco {
           width: 40px !important;
-         
         }
 
         .card-lucky-ball {
@@ -317,11 +338,10 @@ filter: drop-shadow(0 8px 14px rgba(0, 0, 0, 0.18));
       if (existing) existing.remove();
     };
   }, []);
-
-  const handleStart = () => {
+  const handleStart = async () => {
     if (!name.trim() || !mobile.trim()) {
       message.warning({
-        content: "කරුණාකර නම සහ දුරකථන අංකය ඇතුළත් කරන්න",
+        content: t.enterBoth,
         icon: <SafetyOutlined />,
         style: { marginTop: "20vh" },
       });
@@ -330,46 +350,72 @@ filter: drop-shadow(0 8px 14px rgba(0, 0, 0, 0.18));
 
     if (!/^07\d{8}$/.test(mobile)) {
       message.error({
-        content: "වලංගු ජංගම දුරකථන අංකයක් ඇතුළත් කරන්න (07XXXXXXXX)",
+        content: t.invalidPhone,
         icon: <PhoneOutlined />,
         style: { marginTop: "20vh" },
       });
       return;
     }
 
-    setLoading(true);
+    try {
+      setLoading(true);
 
-    const playerData = {
-      name,
-      phone: mobile,
-    };
+      const res = await checkOrLoginPlayer({
+        fullName: name.trim(),
+        phone: mobile.trim(),
+        language,
+      });
 
-    localStorage.setItem("player", JSON.stringify(playerData));
-    setPlayer(playerData);
+      if (!res?.success) {
+        message.error({
+          content: res?.message || "Login failed",
+          style: { marginTop: "20vh" },
+        });
+        return;
+      }
 
-    message.success({
-      content: "සාදරයෙන් පිළිගනිමු! 🎉",
-      duration: 1.5,
-      style: { marginTop: "20vh" },
-    });
+      if (res.playedBefore) {
+        message.warning({
+          content: "This user has already played before",
+          style: { marginTop: "20vh" },
+        });
+        return;
+      }
 
-    setTimeout(() => {
-      navigate("/");
-    }, 800);
-  };
+      const playerData = {
+        _id: res.player?._id,
+        name: res.player?.fullName || name.trim(),
+        phone: res.player?.phone || mobile.trim(),
+        language,
+      };
 
-  const handleReset = () => {
-    localStorage.clear();
-    setName("");
-    setMobile("");
-    message.info({
-      content: "සැසිය මකා දමන ලදී",
-      style: { marginTop: "20vh" },
-    });
+      localStorage.setItem("player", JSON.stringify(playerData));
+      localStorage.setItem("appLanguage", language);
+
+      setPlayer(playerData);
+
+      message.success({
+        content: t.welcomeMsg,
+        duration: 1.5,
+        style: { marginTop: "20vh" },
+      });
+
+      setTimeout(() => {
+        navigate("/");
+      }, 800);
+    } catch (error) {
+      console.error("handleStart error:", error);
+      message.error({
+        content: "Something went wrong. Please try again.",
+        style: { marginTop: "20vh" },
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
-    <div  className="welcome-container">
+    <div className="welcome-container" ref={containerRef}>
       <div className="decoration-pattern" />
 
       <div
@@ -420,22 +466,19 @@ filter: drop-shadow(0 8px 14px rgba(0, 0, 0, 0.18));
               left: 50,
               width: 52,
               transform: "rotate(-12deg)",
-              ["--duration"]: "7s",
             }}
           />
           <img
             src={Jaya}
-            alt="Maha"
+            alt="Jaya"
             className="card-lottery-deco"
             style={{
               top: 350,
               right: 10,
               width: 50,
               transform: "rotate(8deg)",
-              ["--duration"]: "7.2s",
             }}
           />
-
           <img
             src={Dana}
             alt="Dana"
@@ -445,10 +488,8 @@ filter: drop-shadow(0 8px 14px rgba(0, 0, 0, 0.18));
               right: 10,
               width: 50,
               transform: "rotate(10deg)",
-              ["--duration"]: "8s",
             }}
           />
-
           <img
             src={Mega}
             alt="Mega"
@@ -458,10 +499,8 @@ filter: drop-shadow(0 8px 14px rgba(0, 0, 0, 0.18));
               left: 10,
               width: 52,
               transform: "rotate(-12deg)",
-              ["--duration"]: "7s",
             }}
           />
-
           <img
             src={Handa}
             alt="Handa"
@@ -471,7 +510,6 @@ filter: drop-shadow(0 8px 14px rgba(0, 0, 0, 0.18));
               right: 250,
               width: 70,
               transform: "rotate(10deg)",
-              ["--duration"]: "8s",
             }}
           />
           <img
@@ -483,10 +521,8 @@ filter: drop-shadow(0 8px 14px rgba(0, 0, 0, 0.18));
               left: 10,
               width: 50,
               transform: "rotate(-8deg)",
-              ["--duration"]: "6.5s",
             }}
           />
-
           <img
             src={Maha}
             alt="Maha"
@@ -496,13 +532,12 @@ filter: drop-shadow(0 8px 14px rgba(0, 0, 0, 0.18));
               right: 10,
               width: 50,
               transform: "rotate(8deg)",
-              ["--duration"]: "7.2s",
             }}
           />
 
           <div
             className="card-content"
-            style={{ padding: "32px 24px", position: "relative" }}
+            style={{ padding: "22px 24px", position: "relative" }}
           >
             <div
               style={{
@@ -518,31 +553,93 @@ filter: drop-shadow(0 8px 14px rgba(0, 0, 0, 0.18));
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 transition={{ duration: 0.65 }}
                 style={{
-                  width: 180,
+                  width: 120,
+                  marginBottom: 22,
                   maxWidth: "80%",
                   height: "auto",
                   objectFit: "contain",
-                  filter: "drop-shadow(0 8px 18px rgba(139, 69, 19, 0.18))",
                 }}
               />
             </div>
 
-            <motion.h1
-              className="title-shimmer"
-              initial={{ opacity: 0, y: 14 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.15, duration: 0.5 }}
+            <div
               style={{
-                fontSize: 40,
-                textAlign: "center",
-                margin: "0 0 8px",
-                lineHeight: 1.4,
-                fontWeight: 800,
+                display: "flex",
+                justifyContent: "center",
+                marginBottom: 0,
               }}
             >
-              අවුරුදු ක්‍රීඩා
-            </motion.h1>
+              <motion.img
+                src={AwuruduGames}
+                alt="Awurudu Games"
+                initial={{ opacity: 0, scale: 0.85, y: -10 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                transition={{ duration: 0.65 }}
+                style={{
+                  width: 180,
+                  maxWidth: "80%",
+                  height: "auto",
+                  objectFit: "contain",
+                }}
+              />
+            </div>
 
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.18, duration: 0.45 }}
+              style={{
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "flex-end",
+                gap: 12,
+                marginBottom: 18,
+                flexWrap: "wrap",
+              }}
+            >
+              <div className="language-wrap" style={{ textAlign: "center" }}>
+                <div
+                  style={{
+                    fontSize: 13,
+                    fontWeight: 700,
+                    color: "#8B4513",
+                    marginBottom: 12,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    gap: 6,
+                  }}
+                ></div>
+
+                <Segmented
+                  value={language}
+                  onChange={changeLanguage}
+                  options={[
+                    { label: "සිංහල", value: "si" },
+                    { label: "தமிழ்", value: "ta" },
+                  ]}
+                />
+              </div>
+
+              <div style={{ textAlign: "center" }}>
+                <Button
+                  onClick={toggleMute}
+                  style={{
+                    height: 40,
+                    borderRadius: 999,
+                    border: "2px solid #ffd76a",
+                    background: "rgba(255,255,255,0.92)",
+                    color: "#8B4513",
+                    fontWeight: 700,
+                    padding: "0 18px",
+                    boxShadow: "0 8px 20px rgba(255, 193, 7, 0.14)",
+                  }}
+                  icon={isMuted ? <AudioMutedOutlined /> : <SoundOutlined />}
+                >
+                  {isMuted ? t.unmute : t.mute}
+                </Button>
+              </div>
+            </motion.div>
             <motion.p
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
@@ -554,7 +651,7 @@ filter: drop-shadow(0 8px 14px rgba(0, 0, 0, 0.18));
                 marginBottom: 18,
               }}
             >
-              ක්‍රීඩා ආරම්භ කිරීමට ඔබගේ විස්තර ඇතුළත් කරන්න
+              {t.tagline}
             </motion.p>
 
             <motion.div
@@ -564,10 +661,10 @@ filter: drop-shadow(0 8px 14px rgba(0, 0, 0, 0.18));
               className="input-wrapper"
             >
               <span className="input-label">
-                <UserOutlined className="input-icon" /> ඔබගේ නම
+                <UserOutlined className="input-icon" /> {t.nameLabel}
               </span>
               <Input
-                placeholder="ඔබගේ නම ඇතුළත් කරන්න"
+                placeholder={t.namePlaceholder}
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 onFocus={() => setNameFocused(true)}
@@ -599,10 +696,10 @@ filter: drop-shadow(0 8px 14px rgba(0, 0, 0, 0.18));
               className="input-wrapper"
             >
               <span className="input-label">
-                <PhoneOutlined className="input-icon" /> දුරකථන අංකය
+                <PhoneOutlined className="input-icon" /> {t.mobileLabel}
               </span>
               <Input
-                placeholder="07XXXXXXXX"
+                placeholder={t.mobilePlaceholder}
                 value={mobile}
                 onChange={(e) => setMobile(e.target.value)}
                 onFocus={() => setMobileFocused(true)}
@@ -640,7 +737,7 @@ filter: drop-shadow(0 8px 14px rgba(0, 0, 0, 0.18));
                 onClick={handleStart}
                 loading={loading}
               >
-                {loading ? "ආරම්භ කරමින්..." : "▶ ක්‍රීඩා ආරම්භ කරන්න"}
+                {loading ? t.starting : t.start}
               </Button>
             </motion.div>
           </div>

@@ -21,7 +21,11 @@ code {
 .games-background {
   position: fixed;
   inset: 0;
-  background: linear-gradient(135deg, #FFF3E0, #FFE5B4, #FFDAB9);
+  background: linear-gradient(135deg, #180f00, #FFE5B4, #FFDAB9);
   z-index: -1;
 }
 
+html::-webkit-scrollbar,
+body::-webkit-scrollbar {
+  display: none;              /* Chrome, Safari, Edge */
+}

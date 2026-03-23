@@ -14,11 +14,59 @@ import kavum from "../assets/kavum.png";
 import GameEndModal from "../components/GameEndModal";
 import { submitCatchKavumGame } from "../api/gameApi";
 import moveSound from "../assets/sounds/move.mp3";
-
-
+import { useLanguage } from "../context/LanguageContext";
+import WINWAYLogo from "../assets/WIN WAY English Logo- PNG.png";
+import AwuruduGames from "../assets/Aluth Awurudu Games.png";
 
 export default function CatchKavum({ player }) {
   const navigate = useNavigate();
+  const { language } = useLanguage();
+
+  const text = {
+    si: {
+      badge: "කැවුම් අල්ලීමේ ක්‍රීඩාව",
+      title: "කැවුම් අල්ලාගන්න!",
+      subtitle: "කාලය ඉවර වීමට පෙර හැකි තරම් කැවුම් අල්ලාගන්න!",
+      readyTitle: "අල්ලාගන්න සූදානම්ද?",
+      readyDesc:
+        "කැවුම කොටුව ඇතුළේ චලනය වෙයි.\nහැකි තරම් ඉක්මනින් එය අල්ලාගන්න ඔබගේ ලකුණු වැඩි කරගන්න.",
+      startGame: "ක්‍රීඩාව ආරම්භ කරන්න",
+      countdownTitle: "ආරම්භ වීමට තව තත්පර",
+      countdownDesc: "චලනය වන කැවුම අල්ලාගන්න",
+      timeLeft: "ඉතිරි වේලාව",
+      score: "ලකුණු",
+      instruction: "කැවුම පනින්න කලින් ඉක්මනින් අල්ලාගන්න!",
+      timeUp: "කාලය අවසන්!",
+      caughtCount: "ඔබ අල්ලාගත් කැවුම් ගණන",
+      playAgain: "නැවත ක්‍රීඩා කරන්න",
+      goHome: "මුල් පිටුවට යන්න",
+      guest: "Guest",
+      notAvailable: "N/A",
+    },
+    ta: {
+      badge: "கவ்வும் பிடிக்கும் விளையாட்டு",
+      title: "கவ்வுமை பிடியுங்கள்!",
+      subtitle: "நேரம் முடிவதற்கு முன் முடிந்தவரை அதிக கவ்வுமை பிடியுங்கள்!",
+      readyTitle: "பிடிக்க தயாரா?",
+      readyDesc:
+        "கவ்வும் பெட்டிக்குள் நகரும்.\nமுடிந்தவரை வேகமாக அதை பிடித்து உங்கள் மதிப்பெண்ணை உயர்த்துங்கள்.",
+      startGame: "விளையாட்டை தொடங்கவும்",
+      countdownTitle: "தொடங்க இன்னும் விநாடிகள்",
+      countdownDesc: "நகரும் கவ்வுமை பிடியுங்கள்",
+      timeLeft: "மீதமுள்ள நேரம்",
+      score: "மதிப்பெண்",
+      instruction: "கவ்வும் தப்பிக்கும் முன் வேகமாக பிடியுங்கள்!",
+      timeUp: "நேரம் முடிந்தது!",
+      caughtCount: "நீங்கள் பிடித்த கவ்வும்களின் எண்ணிக்கை",
+      playAgain: "மீண்டும் விளையாடுங்கள்",
+      goHome: "முகப்பு பக்கத்துக்கு செல்லவும்",
+      guest: "Guest",
+      notAvailable: "N/A",
+    },
+  };
+
+  const t = text[language] || text.si;
+
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const containerRef = useRef(null);
 
@@ -54,7 +102,7 @@ export default function CatchKavum({ player }) {
 
   useEffect(() => {
     moveSoundRef.current = new Audio(moveSound);
-    moveSoundRef.current.volume = 0.4; // adjust if needed
+    moveSoundRef.current.volume = 0.4;
   }, []);
 
   const createParticles = (x, y) => {
@@ -246,9 +294,8 @@ export default function CatchKavum({ player }) {
 
     setPosition({ top, left });
 
-    // 🔊 PLAY MOVE SOUND
     if (moveSoundRef.current) {
-      moveSoundRef.current.currentTime = 0; // restart sound
+      moveSoundRef.current.currentTime = 0;
       moveSoundRef.current.play().catch(() => {});
     }
   };
@@ -256,9 +303,10 @@ export default function CatchKavum({ player }) {
   const handleFinish = async () => {
     try {
       const res = await submitCatchKavumGame({
-        name: player?.name || "Guest",
-        phone: player?.phone || "N/A",
+        name: player?.name || t.guest,
+        phone: player?.phone || t.notAvailable,
         score: score,
+        language,
       });
 
       if (res) {
@@ -277,12 +325,10 @@ export default function CatchKavum({ player }) {
       const centerX = rect.left + rect.width / 2;
       const centerY = rect.top + rect.height / 2;
 
-      // Calculate combo
       const now = Date.now();
 
       setScore((prev) => prev + 1);
 
-      // Visual effects
       setCatchEffect(true);
       setShowRipple(true);
       createParticles(centerX, centerY);
@@ -333,7 +379,7 @@ export default function CatchKavum({ player }) {
 
   return (
     <div
-      
+      ref={containerRef}
       style={{
         minHeight: "100vh",
         background:
@@ -346,7 +392,6 @@ export default function CatchKavum({ player }) {
         overflow: "hidden",
       }}
     >
-      {/* Animated Background Pattern */}
       <div
         style={{
           position: "absolute",
@@ -368,7 +413,6 @@ export default function CatchKavum({ player }) {
         }}
       />
 
-      {/* Floating Decorative Elements */}
       <div
         className="floating-element"
         style={{
@@ -435,7 +479,6 @@ export default function CatchKavum({ player }) {
         ✨
       </div>
 
-      {/* Main Card */}
       <motion.div
         initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
@@ -459,7 +502,6 @@ export default function CatchKavum({ player }) {
           }}
           bodyStyle={{ padding: 32 }}
         >
-          {/* Decorative Header */}
           <div
             style={{
               marginBottom: 24,
@@ -485,28 +527,40 @@ export default function CatchKavum({ player }) {
             <div
               style={{
                 display: "flex",
+                justifyContent: "space-evenly",
                 alignItems: "center",
-                justifyContent: "center",
-                gap: 10,
-                marginBottom: 10,
+                width: "100%",
+                maxWidth: 420,
+                margin: "0 auto",
+                marginBottom: 0,
               }}
             >
-              <StarOutlined style={{ color: "#FFD700", fontSize: 24 }} />
-              <span style={{ color: "#8B4513", fontWeight: 600, fontSize: 16 }}>
-                කැවුම් අල්ලීමේ ක්‍රීඩාව
-              </span>
-              <StarOutlined style={{ color: "#FFD700", fontSize: 24 }} />
-            </div>
+              <motion.img
+                src={WINWAYLogo}
+                alt="Winway Logo"
+                initial={{ opacity: 0, scale: 0.85, y: -10 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                transition={{ duration: 0.65 }}
+                style={{
+                  width: 120,
+                  height: "auto",
+                  objectFit: "contain",
+                  filter: "drop-shadow(0 8px 18px rgba(139, 69, 19, 0.18))",
+                }}
+              />
 
-            <div
-              style={{
-                fontSize: 60,
-                textAlign: "center",
-                marginBottom: 10,
-                animation: "gentleFloat 3s ease-in-out infinite",
-              }}
-            >
-              🍘
+              <motion.img
+                src={AwuruduGames}
+                alt="Awurudu Games"
+                initial={{ opacity: 0, scale: 0.85, y: -10 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                transition={{ duration: 0.65 }}
+                style={{
+                  width: 180,
+                  height: "auto",
+                  objectFit: "contain",
+                }}
+              />
             </div>
 
             <h2
@@ -521,15 +575,14 @@ export default function CatchKavum({ player }) {
                 WebkitTextFillColor: "transparent",
               }}
             >
-              කැවුම් අල්ලාගන්න!
+              {t.title}
             </h2>
 
             <p style={{ textAlign: "center", color: "#7a7a7a", fontSize: 15 }}>
-              කාලය ඉවර වීමට පෙර හැකි තරම් කැවුම් අල්ලාගන්න!
+              {t.subtitle}
             </p>
           </div>
 
-          {/* Start Screen */}
           {!startClicked && (
             <motion.div
               initial={{ opacity: 0, scale: 0.9 }}
@@ -548,16 +601,8 @@ export default function CatchKavum({ player }) {
                 textAlign: "center",
               }}
             >
-              <div
-                style={{
-                  fontSize: 54,
-                  marginBottom: 10,
-                  animation: "gentleFloat 2s ease-in-out infinite",
-                }}
-              >
-                🎯
-              </div>
-
+             
+             
               <h3
                 style={{
                   marginBottom: 10,
@@ -566,7 +611,7 @@ export default function CatchKavum({ player }) {
                   fontWeight: 700,
                 }}
               >
-                අල්ලාගන්න සූදානම්ද?
+                {t.readyTitle}
               </h3>
 
               <p
@@ -575,11 +620,10 @@ export default function CatchKavum({ player }) {
                   color: "#5f5f5f",
                   lineHeight: 1.7,
                   fontSize: 15,
+                  whiteSpace: "pre-line",
                 }}
               >
-                කැවුම කොටුව ඇතුළේ චලනය වෙයි.
-                <br />
-                හැකි තරම් ඉක්මනින් එය අල්ලාගන්න ඔබගේ ලකුණු වැඩි කරගන්න.
+                {t.readyDesc}
               </p>
 
               <Button
@@ -609,12 +653,11 @@ export default function CatchKavum({ player }) {
                     "0 10px 24px rgba(228,77,46,0.3)";
                 }}
               >
-                ක්‍රීඩාව ආරම්භ කරන්න
+                {t.startGame}
               </Button>
             </motion.div>
           )}
 
-          {/* Countdown */}
           {startClicked && !gameStarted && (
             <motion.div
               initial={{ opacity: 0, scale: 0.9 }}
@@ -630,7 +673,7 @@ export default function CatchKavum({ player }) {
               }}
             >
               <h2 style={{ marginBottom: 20, color: "#8B4513" }}>
-                ආරම්භ වීමට තව තත්පර
+                {t.countdownTitle}
               </h2>
               <div
                 style={{
@@ -651,13 +694,10 @@ export default function CatchKavum({ player }) {
               >
                 {countdown}
               </div>
-              <p style={{ color: "#777", marginTop: 25 }}>
-                චලනය වන කැවුම අල්ලාගන්න
-              </p>
+              <p style={{ color: "#777", marginTop: 25 }}>{t.countdownDesc}</p>
             </motion.div>
           )}
 
-          {/* Game Stats */}
           {gameStarted && !finished && (
             <motion.div
               initial={{ opacity: 0, y: 20 }}
@@ -693,7 +733,7 @@ export default function CatchKavum({ player }) {
                     gap: 4,
                   }}
                 >
-                  <ClockCircleOutlined /> ඉතිරි වේලාව
+                  <ClockCircleOutlined /> {t.timeLeft}
                 </div>
 
                 <div
@@ -730,7 +770,7 @@ export default function CatchKavum({ player }) {
                     gap: 4,
                   }}
                 >
-                  <TrophyOutlined /> ලකුණු
+                  <TrophyOutlined /> {t.score}
                 </div>
 
                 <div
@@ -746,7 +786,6 @@ export default function CatchKavum({ player }) {
             </motion.div>
           )}
 
-          {/* Game Area */}
           {gameStarted && !finished && (
             <motion.div
               initial={{ opacity: 0, scale: 0.9 }}
@@ -801,12 +840,9 @@ export default function CatchKavum({ player }) {
                   }}
                 />
               ))}
-
-              {/* Score popup animation placeholder */}
             </motion.div>
           )}
 
-          {/* Instruction */}
           {gameStarted && !finished && (
             <motion.p
               initial={{ opacity: 0 }}
@@ -820,11 +856,10 @@ export default function CatchKavum({ player }) {
                 animation: "pulseGlow 2s ease-in-out infinite",
               }}
             >
-              කැවුම පනින්න කලින් ඉක්මනින් අල්ලාගන්න!{" "}
+              {t.instruction}
             </motion.p>
           )}
 
-          {/* Finished Screen */}
           <AnimatePresence>
             {finished && (
               <motion.div
@@ -842,19 +877,12 @@ export default function CatchKavum({ player }) {
                   flexDirection: "column",
                   alignItems: "center",
                   justifyContent: "center",
-                  textAlign: "center",
                 }}
               >
-                <motion.div
-                  animate={{ rotate: [0, 10, -10, 0] }}
-                  transition={{ duration: 0.5 }}
-                  style={{ fontSize: 64, marginBottom: 10 }}
-                >
-                  ⏰
-                </motion.div>
+                
 
                 <h2 style={{ color: "#8B4513", fontSize: 28, marginBottom: 8 }}>
-                  කාලය අවසන්!
+                  {t.timeUp}
                 </h2>
 
                 <div
@@ -866,9 +894,10 @@ export default function CatchKavum({ player }) {
                   }}
                 >
                   <div
-                    style={{ color: "#8B4513", fontSize: 14, marginBottom: 5 }}
+                                       style={{ color: "#8B4513", fontSize: 16, marginBottom: 5 }}
+
                   >
-                    ඔබ අල්ලාගත් කැවුම් ගණන
+                    {t.caughtCount}
                   </div>
                   <h3
                     style={{
@@ -905,7 +934,7 @@ export default function CatchKavum({ player }) {
                       e.currentTarget.style.boxShadow = "none";
                     }}
                   >
-                    නැවත ක්‍රීඩා කරන්න
+                    {t.playAgain}
                   </Button>
                 )}
 
@@ -914,15 +943,15 @@ export default function CatchKavum({ player }) {
                     navigate("/");
                   }}
                   style={{
-                     height: 48,
-                padding: "0 32px",
-                borderRadius: 30,
-                fontWeight: 700,
-                fontSize: 16,
-                background: "linear-gradient(135deg, #27AE60, #2ECC71)",
-                border: "none",
-                boxShadow: "0 10px 20px rgba(39,174,96,0.3)",
-                transition: "all 0.3s ease",
+                    height: 48,
+                    padding: "0 32px",
+                    borderRadius: 30,
+                    fontWeight: 700,
+                    fontSize: 16,
+                    background: "linear-gradient(135deg, #27AE60, #2ECC71)",
+                    border: "none",
+                    boxShadow: "0 10px 20px rgba(39,174,96,0.3)",
+                    transition: "all 0.3s ease",
                   }}
                   onMouseEnter={(e) => {
                     e.currentTarget.style.transform = "translateY(-2px)";
@@ -934,13 +963,12 @@ export default function CatchKavum({ player }) {
                     e.currentTarget.style.boxShadow = "none";
                   }}
                 >
-                  {"මුල් පිටුවට යන්න"}
+                  {t.goHome}
                 </Button>
               </motion.div>
             )}
           </AnimatePresence>
 
-          {/* Decorative Footer */}
           <div
             style={{
               marginTop: 24,

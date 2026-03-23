@@ -36,11 +36,11 @@ export default function GamesHome() {
       description: "ඉක්මනින් රබානට තට්ටු කරන්න",
     },
     {
-      option: "කැවුම් අල්ලන්න",
+      option: "කැවුම් අල්ලමු",
       route: "/kavum",
       style: { backgroundColor: "#b37feb", textColor: "#fff" },
       icon: "🎯",
-      description: "හැකි තරම් කැවුම් අල්ලන්න",
+      description: "හැකි තරම් කැවුම් අල්ලමු",
     },
     {
       option: "කණා මුට්ටි බිඳිමු",

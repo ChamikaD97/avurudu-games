@@ -2,12 +2,13 @@ import { Card, Button, message } from "antd";
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { 
-  GiftOutlined, 
+import {
+  GiftOutlined,
   FireOutlined,
   StarOutlined,
   ThunderboltOutlined,
-  HeartOutlined
+  HeartOutlined,
+  ClockCircleOutlined,
 } from "@ant-design/icons";
 import { checkUser } from "../api/api";
 import pot from "../assets/claypot.png";
@@ -15,11 +16,63 @@ import pot2 from "../assets/claypot2.png";
 import pot3 from "../assets/claypot3.png";
 import pot4 from "../assets/claypot4.png";
 import GameEndModal from "../components/GameEndModal";
-import  breakSound from "../assets/sounds/break.mp3";
+import breakSound from "../assets/sounds/break.mp3";
 import { submitBreakPotGame } from "../api/gameApi";
+import { useLanguage } from "../context/LanguageContext";
+import WINWAYLogo from "../assets/WIN WAY English Logo- PNG.png";
+import AwuruduGames from "../assets/Aluth Awurudu Games.png";
 
 export default function BreakPot({ player }) {
   const navigate = useNavigate();
+  const { language } = useLanguage();
+
+  const text = {
+    si: {
+      badge: "මුට්ටිය බිඳීමේ ක්‍රීඩාව",
+      title: "මුට්ටිය බිඳන්න",
+      subtitle:
+        "හැකි තරම් ඉක්මනින් මුට්ටියට පහර දී, කෙටිම වේලාවෙන් එය බිඳා දමන්න.",
+      readyTitle: "බිඳීමට සූදානම්ද?",
+      readyDesc:
+        "මුට්ටිය නැවත නැවතත් පහර දී බිඳා දමන්න.\nඔබ ඉක්මනින් බිඳන තරමට ඔබගේ ප්‍රතිඵලය වඩා හොඳ වේ.",
+      startGame: "ක්‍රීඩාව ආරම්භ කරන්න",
+      countdownTitle: "ආරම්භ වීමට තව තත්පර",
+      countdownDesc: "මුට්ටිය ඉක්මනින් බිඳීමට සූදානම් වෙන්න",
+      time: "වේලාව",
+      remainingHits: "ඉතිරි පහර",
+      hitUntilBreak: "මුට්ටිය බිඳෙන තුරු දිගටම පහර දෙන්න",
+      brokenTitle: "මුට්ටිය බිඳුණා!",
+      elapsedTime: "ගත වූ කාලය",
+      playAgain: "නැවත ක්‍රීඩා කරන්න",
+      guest: "Guest",
+      goHome: "මුල් පිටුවට යන්න",
+      notAvailable: "N/A",
+    },
+    ta: {
+      badge: "பானை உடைக்கும் விளையாட்டு",
+      title: "பானையை உடையுங்கள்",
+      subtitle:
+        "முடிந்தவரை வேகமாக பானையை அடித்து, குறைந்த நேரத்தில் அதை உடையுங்கள்.",
+      readyTitle: "உடைக்க தயாரா?",
+      readyDesc:
+        "பானையை மீண்டும் மீண்டும் அடித்து உடையுங்கள்.\nநீங்கள் வேகமாக உடைத்தால் உங்கள் முடிவு இன்னும் சிறந்ததாக இருக்கும்.",
+      startGame: "விளையாட்டை தொடங்கவும்",
+      countdownTitle: "தொடங்க இன்னும் விநாடிகள்",
+      countdownDesc: "பானையை வேகமாக உடைக்க தயாராகுங்கள்",
+      time: "நேரம்",
+      remainingHits: "மீதமுள்ள அடிகள்",
+      hitUntilBreak: "பானை உடையும் வரை தொடர்ந்து அடியுங்கள்",
+      brokenTitle: "பானை உடைந்துவிட்டது!",
+      elapsedTime: "எடுத்த நேரம்",
+      playAgain: "மீண்டும் விளையாடுங்கள்",
+      guest: "Guest",
+      notAvailable: "N/A",
+      goHome: "முகப்பு பக்கத்துக்கு செல்லவும்",
+    },
+  };
+
+  const t = text[language] || text.si;
+
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const containerRef = useRef(null);
 
@@ -45,7 +98,6 @@ export default function BreakPot({ player }) {
   const MAX_HITS = 8;
   const remainingHits = MAX_HITS - hits;
 
-  // Track mouse for parallax effect
   useEffect(() => {
     const handleMouseMove = (e) => {
       if (containerRef.current) {
@@ -57,8 +109,8 @@ export default function BreakPot({ player }) {
       }
     };
 
-    window.addEventListener('mousemove', handleMouseMove);
-    return () => window.removeEventListener('mousemove', handleMouseMove);
+    window.addEventListener("mousemove", handleMouseMove);
+    return () => window.removeEventListener("mousemove", handleMouseMove);
   }, []);
 
   useEffect(() => {
@@ -69,14 +121,12 @@ export default function BreakPot({ player }) {
     breakAudioRef.current.volume = 0.7;
   }, []);
 
-  // Update crack level based on hits
   useEffect(() => {
     if (hits > 0 && hits < MAX_HITS) {
       setCrackLevel(Math.floor((hits / MAX_HITS) * 100));
     }
   }, [hits]);
 
-  // Inject enhanced animations
   useEffect(() => {
     const styleId = "breakpot-festival-animations";
     if (document.getElementById(styleId)) return;
@@ -227,7 +277,6 @@ export default function BreakPot({ player }) {
     document.head.appendChild(style);
   }, []);
 
-  // Generate particles on hit
   const createParticles = () => {
     const newParticles = [];
     for (let i = 0; i < 8; i++) {
@@ -236,7 +285,7 @@ export default function BreakPot({ player }) {
         x: Math.random() * 100,
         y: Math.random() * 100,
         delay: i * 0.05,
-        angle: (i * 45) * (Math.PI / 180),
+        angle: i * 45 * (Math.PI / 180),
       });
     }
     setParticles([...particles, ...newParticles]);
@@ -246,20 +295,24 @@ export default function BreakPot({ player }) {
     }, 500);
   };
 
-  const handleFinish = async () => {
+  const handleFinish = async (finishTime) => {
+    console.log("finishTime:", finishTime);
+
     try {
       const res = await submitBreakPotGame({
-        name: player?.name || "Guest",
-        phone: player?.phone || "N/A",
-        score: hits,
-        time: finalTime,
+        name: player?.name || t.guest,
+        phone: player?.phone || t.notAvailable,
+        score: finishTime,
+        time: finishTime,
+        finalTime: finishTime,
+        language,
       });
 
-      if (res) {
+      if (res?.success) {
         localStorage.setItem("game_break_pot_done", "true");
       }
     } catch (err) {
-      console.log("Failed to save");
+      console.log("Failed to save", err);
     }
   };
 
@@ -288,12 +341,16 @@ export default function BreakPot({ player }) {
 
     if (hitAudioRef.current) {
       hitAudioRef.current.currentTime = 0;
-      hitAudioRef.current.play().catch(e => console.log("Audio play failed:", e));
+      hitAudioRef.current
+        .play()
+        .catch((e) => console.log("Audio play failed:", e));
     }
 
     if (newHits >= 8) {
+      const finishTime = Number(time.toFixed(2));
+
       setBroken(true);
-      setFinalTime(time);
+      setFinalTime(finishTime);
 
       setTimeout(() => {
         setShowModal(true);
@@ -301,9 +358,12 @@ export default function BreakPot({ player }) {
 
       if (breakAudioRef.current) {
         breakAudioRef.current.currentTime = 0;
-        breakAudioRef.current.play().catch(e => console.log("Audio play failed:", e));
+        breakAudioRef.current
+          .play()
+          .catch((e) => console.log("Audio play failed:", e));
       }
-      handleFinish();
+
+      handleFinish(finishTime);
     }
   };
 
@@ -348,7 +408,6 @@ export default function BreakPot({ player }) {
     setCrackLevel(0);
   };
 
-  // Determine pot image based on remaining hits
   const getPotImage = () => {
     if (remainingHits > 6) return pot;
     if (remainingHits > 4) return pot2;
@@ -358,10 +417,11 @@ export default function BreakPot({ player }) {
 
   return (
     <div
-      
+      ref={containerRef}
       style={{
         minHeight: "100vh",
-        background: "radial-gradient(circle at 30% 30%, #8B4513, #D2691E, #CD853F)",
+        background:
+          "radial-gradient(circle at 30% 30%, #8B4513, #D2691E, #CD853F)",
         padding: "30px 16px",
         display: "flex",
         justifyContent: "center",
@@ -370,7 +430,6 @@ export default function BreakPot({ player }) {
         overflow: "hidden",
       }}
     >
-      {/* Animated Background Pattern */}
       <div
         style={{
           position: "absolute",
@@ -392,15 +451,14 @@ export default function BreakPot({ player }) {
         }}
       />
 
-      {/* Floating Decorative Elements */}
       <div
         className="floating-element"
         style={{
           top: "10%",
           left: "5%",
           fontSize: 48,
-          '--duration': '12s',
-          '--delay': '0s',
+          "--duration": "12s",
+          "--delay": "0s",
           transform: `translate(${mousePosition.x * 0.3}px, ${mousePosition.y * 0.3}px)`,
         }}
       >
@@ -412,8 +470,8 @@ export default function BreakPot({ player }) {
           top: "80%",
           right: "5%",
           fontSize: 36,
-          '--duration': '15s',
-          '--delay': '2s',
+          "--duration": "15s",
+          "--delay": "2s",
           transform: `translate(${mousePosition.x * 0.5}px, ${mousePosition.y * 0.5}px)`,
         }}
       >
@@ -425,8 +483,8 @@ export default function BreakPot({ player }) {
           top: "20%",
           right: "15%",
           fontSize: 42,
-          '--duration': '10s',
-          '--delay': '1s',
+          "--duration": "10s",
+          "--delay": "1s",
           transform: `translate(${mousePosition.x * 0.4}px, ${mousePosition.y * 0.4}px)`,
         }}
       >
@@ -438,8 +496,8 @@ export default function BreakPot({ player }) {
           bottom: "15%",
           left: "10%",
           fontSize: 40,
-          '--duration': '14s',
-          '--delay': '3s',
+          "--duration": "14s",
+          "--delay": "3s",
           transform: `translate(${mousePosition.x * 0.6}px, ${mousePosition.y * 0.6}px)`,
         }}
       >
@@ -451,15 +509,14 @@ export default function BreakPot({ player }) {
           top: "40%",
           right: "20%",
           fontSize: 32,
-          '--duration': '11s',
-          '--delay': '1.5s',
+          "--duration": "11s",
+          "--delay": "1.5s",
           transform: `translate(${mousePosition.x * 0.2}px, ${mousePosition.y * 0.2}px)`,
         }}
       >
         ✨
       </div>
 
-      {/* Main Card */}
       <motion.div
         initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
@@ -483,7 +540,6 @@ export default function BreakPot({ player }) {
           }}
           bodyStyle={{ padding: 32 }}
         >
-          {/* Decorative Header */}
           <div
             style={{
               marginBottom: 24,
@@ -499,29 +555,50 @@ export default function BreakPot({ player }) {
                 left: -10,
                 width: 60,
                 height: 60,
-                background: "radial-gradient(circle, rgba(255,215,0,0.2) 0%, transparent 70%)",
+                background:
+                  "radial-gradient(circle, rgba(255,215,0,0.2) 0%, transparent 70%)",
                 borderRadius: "50%",
                 animation: "spinSlow 15s linear infinite",
               }}
             />
-            
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 10, marginBottom: 10 }}>
-              <ThunderboltOutlined style={{ color: "#FFD700", fontSize: 24 }} />
-              <span style={{ color: "#8B4513", fontWeight: 600, fontSize: 16 }}>
-                කලය බිඳීමේ ක්‍රීඩාව
-              </span>
-              <ThunderboltOutlined style={{ color: "#FFD700", fontSize: 24 }} />
-            </div>
 
             <div
               style={{
-                fontSize: 60,
-                textAlign: "center",
-                marginBottom: 10,
-                animation: "gentleFloat 3s ease-in-out infinite",
+                display: "flex",
+                justifyContent: "space-evenly",
+                alignItems: "center",
+                width: "100%",
+                maxWidth: 420,
+                margin: "0 auto",
+                marginBottom: 0,
               }}
             >
-              🏺
+              <motion.img
+                src={WINWAYLogo}
+                alt="Winway Logo"
+                initial={{ opacity: 0, scale: 0.85, y: -10 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                transition={{ duration: 0.65 }}
+                style={{
+                  width: 120,
+                  height: "auto",
+                  objectFit: "contain",
+                  filter: "drop-shadow(0 8px 18px rgba(139, 69, 19, 0.18))",
+                }}
+              />
+
+              <motion.img
+                src={AwuruduGames}
+                alt="Awurudu Games"
+                initial={{ opacity: 0, scale: 0.85, y: -10 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                transition={{ duration: 0.65 }}
+                style={{
+                  width: 180,
+                  height: "auto",
+                  objectFit: "contain",
+                }}
+              />
             </div>
 
             <h2
@@ -536,44 +613,32 @@ export default function BreakPot({ player }) {
                 WebkitTextFillColor: "transparent",
               }}
             >
-              කලය බිඳන්න
+              {t.title}
             </h2>
 
             <p style={{ textAlign: "center", color: "#7a7a7a", fontSize: 15 }}>
-              හැකි තරම් ඉක්මනින් කලයට පහර දී, කෙටිම වේලාවෙන් එය බිඳා දමන්න.
+              {t.subtitle}
             </p>
           </div>
 
-          {/* Start Screen */}
           {!startClicked && (
             <motion.div
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: 0.2 }}
               style={{
-  background: "linear-gradient(135deg, #FFF8E7, #FFEBCD)",
-  border: "2px solid #FFD700",
-  borderRadius: 24,
-  padding: "24px 20px",
-  marginBottom: 20,
-
-  display: "flex",
-  flexDirection: "column",
-  alignItems: "center",
-  justifyContent: "center",
-  textAlign: "center",
-}}
+                background: "linear-gradient(135deg, #FFF8E7, #FFEBCD)",
+                border: "2px solid #FFD700",
+                borderRadius: 24,
+                padding: "24px 20px",
+                marginBottom: 20,
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                justifyContent: "center",
+                textAlign: "center",
+              }}
             >
-              <div
-                style={{
-                  fontSize: 54,
-                  marginBottom: 10,
-                  animation: "gentleFloat 2s ease-in-out infinite",
-                }}
-              >
-                🎯
-              </div>
-
               <h3
                 style={{
                   marginBottom: 10,
@@ -582,7 +647,7 @@ export default function BreakPot({ player }) {
                   fontWeight: 700,
                 }}
               >
-                බිඳීමට සූදානම්ද?
+                {t.readyTitle}
               </h3>
 
               <p
@@ -591,11 +656,10 @@ export default function BreakPot({ player }) {
                   color: "#5f5f5f",
                   lineHeight: 1.7,
                   fontSize: 15,
+                  whiteSpace: "pre-line",
                 }}
               >
-                කලය නැවත නැවතත් පහර දී බිඳා දමන්න.
-                <br />
-                ඔබ ඉක්මනින් බිඳන තරමට ඔබගේ ප්‍රතිඵලය වඩා හොඳ වේ.
+                {t.readyDesc}
               </p>
 
               <Button
@@ -614,40 +678,41 @@ export default function BreakPot({ player }) {
                   transition: "all 0.3s ease",
                 }}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.transform = "translateY(-3px) scale(1.02)";
-                  e.currentTarget.style.boxShadow = "0 15px 30px rgba(228,77,46,0.4)";
+                  e.currentTarget.style.transform =
+                    "translateY(-3px) scale(1.02)";
+                  e.currentTarget.style.boxShadow =
+                    "0 15px 30px rgba(228,77,46,0.4)";
                 }}
                 onMouseLeave={(e) => {
                   e.currentTarget.style.transform = "translateY(0) scale(1)";
-                  e.currentTarget.style.boxShadow = "0 10px 24px rgba(228,77,46,0.3)";
+                  e.currentTarget.style.boxShadow =
+                    "0 10px 24px rgba(228,77,46,0.3)";
                 }}
               >
-                ක්‍රීඩාව ආරම්භ කරන්න
+                {t.startGame}
               </Button>
             </motion.div>
           )}
 
-          {/* Countdown */}
           {startClicked && !gameStarted && (
             <motion.div
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
-             style={{
-  background: "linear-gradient(135deg, #FFF8E7, #FFEBCD)",
-  border: "2px solid #FFD700",
-  borderRadius: 24,
-  padding: "24px 20px",
-  marginBottom: 20,
-
-  display: "flex",
-  flexDirection: "column",
-  alignItems: "center",
-  justifyContent: "center",
-  textAlign: "center",
-}}
+              style={{
+                background: "linear-gradient(135deg, #FFF8E7, #FFEBCD)",
+                border: "2px solid #FFD700",
+                borderRadius: 24,
+                padding: "24px 20px",
+                marginBottom: 20,
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                justifyContent: "center",
+                textAlign: "center",
+              }}
             >
               <h2 style={{ marginBottom: 20, color: "#8B4513" }}>
-                ආරම්භ වීමට තව තත්පර
+                {t.countdownTitle}
               </h2>
               <div
                 style={{
@@ -668,13 +733,10 @@ export default function BreakPot({ player }) {
               >
                 {countdown}
               </div>
-              <p style={{ color: "#777", marginTop: 25 }}>
-                කලය ඉක්මනින් බිඳීමට සූදානම් වෙන්න
-              </p>
+              <p style={{ color: "#777", marginTop: 25 }}>{t.countdownDesc}</p>
             </motion.div>
           )}
 
-          {/* Game Stats */}
           {gameStarted && !broken && (
             <motion.div
               initial={{ opacity: 0, y: 20 }}
@@ -709,7 +771,7 @@ export default function BreakPot({ player }) {
                     letterSpacing: 1,
                   }}
                 >
-                  වේලාව
+                  {t.time}
                 </div>
 
                 <div
@@ -744,7 +806,7 @@ export default function BreakPot({ player }) {
                     letterSpacing: 1,
                   }}
                 >
-                  ඉතිරි පහර
+                  {t.remainingHits}
                 </div>
 
                 <div
@@ -761,8 +823,7 @@ export default function BreakPot({ player }) {
             </motion.div>
           )}
 
-          {/* Pot Container */}
-          {gameStarted && (
+          {gameStarted && !broken && (
             <motion.div
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
@@ -777,7 +838,11 @@ export default function BreakPot({ player }) {
                 position: "relative",
               }}
             >
-              <div className="pot-container" ref={potRef} style={{ position: "relative" }}>
+              <div
+                className="pot-container"
+                ref={potRef}
+                style={{ position: "relative" }}
+              >
                 <img
                   src={getPotImage()}
                   alt="pot"
@@ -791,7 +856,6 @@ export default function BreakPot({ player }) {
                   }}
                 />
 
-                {/* Crack effect based on hits */}
                 {!broken && hits > 0 && (
                   <div
                     className="crack-effect"
@@ -817,7 +881,6 @@ export default function BreakPot({ player }) {
                   />
                 ))}
 
-                {/* Hit counter badge */}
                 {!broken && hits > 0 && (
                   <div
                     style={{
@@ -852,13 +915,12 @@ export default function BreakPot({ player }) {
                     animation: "pulseGlow 2s ease-in-out infinite",
                   }}
                 >
-                  කලය බිඳෙන තුරු දිගටම පහර දෙන්න
+                  {t.hitUntilBreak}
                 </p>
               )}
             </motion.div>
           )}
 
-          {/* Broken Message */}
           <AnimatePresence>
             {broken && (
               <motion.div
@@ -874,28 +936,41 @@ export default function BreakPot({ player }) {
                   textAlign: "center",
                 }}
               >
-                <motion.div
-                  animate={{ rotate: [0, 10, -10, 0] }}
-                  transition={{ duration: 0.5 }}
-                  style={{ fontSize: 64, marginBottom: 10 }}
-                >
-                  🎉
-                </motion.div>
-
-                <h2 style={{ color: "#8B4513", fontSize: 28, marginBottom: 8 }}>
-                  කලය බිඳුණා!
+                <h2 style={{ color: "#8B4513", fontSize: 28, marginBottom: 0 }}>
+                  {t.brokenTitle}
                 </h2>
-
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "center",
+                    marginBottom: 0,
+                  }}
+                >
+                  <img
+                    src={pot4}
+                    alt="broken pot"
+                    style={{
+                      width: 200,
+                      maxWidth: "80%",
+                      height: "auto",
+                      objectFit: "contain",
+                      filter: "drop-shadow(0 8px 18px rgba(139, 69, 19, 0.18))",
+                    }}
+                  />
+                </div>
                 <div
                   style={{
                     background: "linear-gradient(135deg, #FFD700, #FFA500)",
                     padding: "15px",
                     borderRadius: 20,
                     marginBottom: 16,
+                    fontWeight: 800,
                   }}
                 >
-                  <div style={{ color: "#8B4513", fontSize: 14, marginBottom: 5 }}>
-                    ගත වූ කාලය
+                  <div
+                    style={{ color: "#8B4513", fontSize: 16, marginBottom: 5 }}
+                  >
+                    {t.elapsedTime}
                   </div>
                   <h3
                     style={{
@@ -909,42 +984,37 @@ export default function BreakPot({ player }) {
                   </h3>
                 </div>
 
-                <div
+                <Button
+                  onClick={() => {
+                    navigate("/");
+                  }}
                   style={{
-                    display: "flex",
-                    justifyContent: "center",
-                    gap: 12,
-                    flexWrap: "wrap",
+                    height: 48,
+                    padding: "0 32px",
+                    borderRadius: 30,
+                    fontWeight: 700,
+                    fontSize: 16,
+                    background: "linear-gradient(135deg, #27AE60, #2ECC71)",
+                    border: "none",
+                    boxShadow: "0 10px 20px rgba(39,174,96,0.3)",
+                    transition: "all 0.3s ease",
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.transform = "translateY(-2px)";
+                    e.currentTarget.style.boxShadow =
+                      "0 10px 20px rgba(255,215,0,0.3)";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.transform = "translateY(0)";
+                    e.currentTarget.style.boxShadow = "none";
                   }}
                 >
-                  <Button
-                    onClick={restartGame}
-                    style={{
-                      height: 46,
-                      borderRadius: 23,
-                      fontWeight: 700,
-                      border: "2px solid #FFD700",
-                      background: "white",
-                      color: "#8B4513",
-                      transition: "all 0.3s ease",
-                    }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.transform = "translateY(-2px)";
-                      e.currentTarget.style.boxShadow = "0 10px 20px rgba(255,215,0,0.3)";
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.transform = "translateY(0)";
-                      e.currentTarget.style.boxShadow = "none";
-                    }}
-                  >
-                    නැවත ක්‍රීඩා කරන්න
-                  </Button>
-                </div>
+                  {t.goHome}
+                </Button>
               </motion.div>
             )}
           </AnimatePresence>
 
-          {/* Decorative Footer */}
           <div
             style={{
               marginTop: 24,
@@ -954,19 +1024,41 @@ export default function BreakPot({ player }) {
               opacity: 0.6,
             }}
           >
-            <span style={{ fontSize: 20, animation: "gentleFloat 3s ease-in-out infinite" }}>🏺</span>
-            <span style={{ fontSize: 20, animation: "gentleFloat 3.5s ease-in-out infinite" }}>💥</span>
-            <span style={{ fontSize: 20, animation: "gentleFloat 4s ease-in-out infinite" }}>✨</span>
-            <span style={{ fontSize: 20, animation: "gentleFloat 2.5s ease-in-out infinite" }}>🔨</span>
+            <span
+              style={{
+                fontSize: 20,
+                animation: "gentleFloat 3s ease-in-out infinite",
+              }}
+            >
+              🏺
+            </span>
+            <span
+              style={{
+                fontSize: 20,
+                animation: "gentleFloat 3.5s ease-in-out infinite",
+              }}
+            >
+              💥
+            </span>
+            <span
+              style={{
+                fontSize: 20,
+                animation: "gentleFloat 4s ease-in-out infinite",
+              }}
+            >
+              ✨
+            </span>
+            <span
+              style={{
+                fontSize: 20,
+                animation: "gentleFloat 2.5s ease-in-out infinite",
+              }}
+            >
+              🔨
+            </span>
           </div>
         </Card>
       </motion.div>
-
-      <GameEndModal
-        open={showModal}
-        gameName="කණා මුට්ටි බිඳිමු"
-        onClose={() => navigate("/")}
-      />
     </div>
   );
 }

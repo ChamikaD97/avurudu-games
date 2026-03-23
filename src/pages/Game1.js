@@ -1,62 +1,138 @@
-import { Card, Button, Progress } from "antd";
-import { useState, useEffect, useRef } from "react";
+import { Card, Button } from "antd";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import GameEndModal from "../components/GameEndModal";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  GiftOutlined,
   TrophyOutlined,
-  FireOutlined,
-  StarOutlined,
+  CheckCircleOutlined,
+  CloseCircleOutlined,
+  ClockCircleOutlined,
 } from "@ant-design/icons";
-import Ada from "../assets/All lotteries/Ada Sampatha - Fri.jpg";
-import Dana from "../assets/All lotteries/DN- FRI.png";
-import Govi from "../assets/All lotteries/GS- FRI.png";
 import WINWAYLogo from "../assets/WIN WAY English Logo- PNG.png";
-
-import Handa from "../assets/All lotteries/H- SAT.png";
-import Mega from "../assets/All lotteries/MP- WED.png";
-import Maha from "../assets/All lotteries/MS- FRI.png";
-import Jaya from "../assets/All lotteries/Jaya - Fri.jpg";
-// ✅ API
 import { submitQuizGame } from "../api/gameApi";
-
-const questions = [
-  {
-    question: "මල් වැනි හැඩයක් ඇති අවුරුදු කැවිලි කුමක්ද?",
-    options: ["කොකිස්", "කැවුම්", "අලුවා", "අග්ගලා"],
-    answer: "කොකිස්",
-  },
-  {
-    question: "අවුරුදු ආරම්භයේදී කරන්නේ කුමක්ද?",
-    options: [
-      "ටීවී බලනවා",
-      "ලිප ගිනි දමා කිරි බත් උයනවා",
-      "වෙළඳසල් යනවා",
-      "රැකියාවට යනවා",
-    ],
-    answer: "ලිප ගිනි දමා කිරි බත් උයනවා",
-  },
-  {
-    question: "මේවා අතරින් අවුරුදු ක්‍රීඩාවක් වන්නේ කුමක්ද?",
-    options: ["ක්‍රිකට්", "කණා මුට්ටි", "පාපන්දු", "චෙස්"],
-    answer: "කණා මුට්ටි",
-  },
-];
+import { useLanguage } from "../context/LanguageContext";
+import AwuruduGames from "../assets/Aluth Awurudu Games.png";
 
 export default function Game1({ player }) {
   const navigate = useNavigate();
-  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const containerRef = useRef(null);
+  const { language } = useLanguage();
+
+  const questionBank = {
+    si: [
+      {
+        question: "මල් වැනි හැඩයක් ඇති අවුරුදු කැවිලි කුමක්ද?",
+        options: ["කොකිස්", "කැවුම්", "අලුවා", "අග්ගලා"],
+        answer: "කොකිස්",
+      },
+      {
+        question: "අවුරුදු ආරම්භයේදී කරන්නේ කුමක්ද?",
+        options: [
+          "ටීවී බලනවා",
+          "ලිප ගිනි දමා කිරි බත් උයනවා",
+          "වෙළඳසල් යනවා",
+          "රැකියාවට යනවා",
+        ],
+        answer: "ලිප ගිනි දමා කිරි බත් උයනවා",
+      },
+      {
+        question: "මේවා අතරින් අවුරුදු ක්‍රීඩාවක් වන්නේ කුමක්ද?",
+        options: ["ක්‍රිකට්", "කණා මුට්ටි", "පාපන්දු", "චෙස්"],
+        answer: "කණා මුට්ටි",
+      },
+      {
+        question: "අවුරුදු සමයේ වැඩිපුරම සාදන බත් වර්ගය කුමක්ද?",
+        options: ["පොල් බත්", "කිරි බත්", "බිරියානි", "ලෙමන් රයිස්"],
+        answer: "කිරි බත්",
+      },
+    ],
+    ta: [
+      {
+        question: "மலர் போன்ற வடிவம் கொண்ட புத்தாண்டு இனிப்பு எது?",
+        options: ["கொக்கிஸ்", "கவ்வும்", "அலுவா", "அக்கலா"],
+        answer: "கொக்கிஸ்",
+      },
+      {
+        question: "புத்தாண்டு தொடக்கத்தில் என்ன செய்கிறார்கள்?",
+        options: [
+          "டிவி பார்க்கிறார்கள்",
+          "அடுப்பை ஏற்றி பால் சோறு சமைக்கிறார்கள்",
+          "கடைக்கு செல்கிறார்கள்",
+          "வேலைக்கு செல்கிறார்கள்",
+        ],
+        answer: "அடுப்பை ஏற்றி பால் சோறு சமைக்கிறார்கள்",
+      },
+      {
+        question: "இவற்றில் புத்தாண்டு விளையாட்டு எது?",
+        options: ["கிரிக்கெட்", "கணா முட்டி", "கால்பந்து", "சதுரங்கம்"],
+        answer: "கணா முட்டி",
+      },
+      {
+        question: "புத்தாண்டு காலத்தில் அதிகம் தயாரிக்கப்படும் சாதம் எது?",
+        options: ["தேங்காய் சாதம்", "பால் சோறு", "பிரியாணி", "எலுமிச்சை சாதம்"],
+        answer: "பால் சோறு",
+      },
+    ],
+  };
+
+  const uiText = {
+    si: {
+      title: "අවුරුදු ප්‍රශ්න මාලාව",
+      questionLabel: "ප්‍රශ්නය",
+      previous: "පෙර",
+      back: "ආපසු",
+      next: "ඊළඟ",
+      finish: "අවසන් කරන්න",
+      gameOver: "ක්‍රීඩාව අවසන්!",
+      yourScore: "ඔබගේ ලකුණු",
+      timeTaken: "ගතවූ කාලය",
+      answerReview: "නිවැරදි පිළිතුරු සහ ඔබගේ පිළිතුරු",
+      correctAnswer: "නිවැරදි පිළිතුර:",
+      yourAnswer: "ඔබගේ පිළිතුර:",
+      yourAnswerCorrect: "ඔබගේ පිළිතුර නිවැරදිය:",
+      playAgain: "නැවත ක්‍රීඩා කරන්න",
+      goHome: "මුල් පිටුවට යන්න",
+    },
+    ta: {
+      title: "புத்தாண்டு வினாடி வினா",
+      questionLabel: "கேள்வி",
+      previous: "முந்தையது",
+      back: "பின்னுக்கு",
+      next: "அடுத்து",
+      finish: "முடிக்கவும்",
+      gameOver: "விளையாட்டு முடிந்தது!",
+      yourScore: "உங்கள் மதிப்பெண்",
+      timeTaken: "எடுத்த நேரம்",
+      answerReview: "சரியான பதில்கள் மற்றும் உங்கள் பதில்கள்",
+      correctAnswer: "சரியான பதில்:",
+      yourAnswer: "உங்கள் பதில்:",
+      yourAnswerCorrect: "உங்கள் பதில் சரியானது:",
+      playAgain: "மீண்டும் விளையாடுங்கள்",
+      goHome: "முகப்பு பக்கத்துக்கு செல்லவும்",
+    },
+  };
+
+  const questions = useMemo(
+    () => questionBank[language] || questionBank.si,
+    [language],
+  );
+  const t = uiText[language] || uiText.si;
 
   const [current, setCurrent] = useState(0);
   const [selected, setSelected] = useState(null);
   const [answers, setAnswers] = useState([]);
-  const [showModal, setShowModal] = useState(false);
   const [startTime, setStartTime] = useState(null);
-  const [endTime, setEndTime] = useState(null);
 
-  // Track mouse for parallax effect
+  const [finished, setFinished] = useState(false);
+  const [finalScore, setFinalScore] = useState(0);
+  const [timeTaken, setTimeTaken] = useState("0.00");
+
+  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+
+  useEffect(() => {
+    setStartTime(Date.now());
+  }, []);
+
   useEffect(() => {
     const handleMouseMove = (e) => {
       if (containerRef.current) {
@@ -72,11 +148,6 @@ export default function Game1({ player }) {
     return () => window.removeEventListener("mousemove", handleMouseMove);
   }, []);
 
-  useEffect(() => {
-    setStartTime(Date.now());
-  }, []);
-
-  // Inject animations
   useEffect(() => {
     const styleId = "game1-festival-animations";
     if (document.getElementById(styleId)) return;
@@ -116,15 +187,6 @@ export default function Game1({ player }) {
         }
       }
 
-      @keyframes shimmer {
-        0% {
-          background-position: -1000px 0;
-        }
-        100% {
-          background-position: 1000px 0;
-        }
-      }
-
       @keyframes spinSlow {
         from {
           transform: rotate(0deg);
@@ -154,74 +216,61 @@ export default function Game1({ player }) {
         animation-delay: var(--delay);
         filter: drop-shadow(0 0 5px rgba(255, 215, 0, 0.2));
       }
-
-      .progress-glow {
-        animation: pulseGlow 2s ease-in-out infinite;
-      }
     `;
     document.head.appendChild(style);
   }, []);
 
   const handleSelect = (opt) => {
+    if (finished) return;
     setSelected(opt);
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!selected) return;
 
     const currentQ = questions[current];
 
-    setAnswers((prev) => [
-      ...prev,
+    const updatedAnswers = [
+      ...answers,
       {
         question: currentQ.question,
-        selected: selected,
+        selected,
         correct: currentQ.answer,
         isCorrect: selected === currentQ.answer,
       },
-    ]);
+    ];
 
     if (current + 1 < questions.length) {
-      setCurrent(current + 1);
+      setAnswers(updatedAnswers);
+      setCurrent((prev) => prev + 1);
       setSelected(null);
     } else {
-      handleFinish();
-      setShowModal(true);
+      await handleFinish(updatedAnswers);
     }
   };
 
-  const handleFinish = async () => {
+  const handleFinish = async (finalAnswers) => {
     const finishTime = Date.now();
-    setEndTime(finishTime);
-
-    const timeTaken = ((finishTime - startTime) / 1000).toFixed(2);
-
-    const finalAnswers = [
-      ...answers,
-      {
-        question: questions[current].question,
-        selected: selected,
-        correct: questions[current].answer,
-        isCorrect: selected === questions[current].answer,
-      },
-    ];
-
+    const totalTime = ((finishTime - startTime) / 1000).toFixed(2);
     const score = finalAnswers.filter((a) => a.isCorrect).length;
+
+    setAnswers(finalAnswers);
+    setFinalScore(score);
+    setTimeTaken(totalTime);
+    setFinished(true);
 
     const payload = {
       name: player?.name || "Guest",
       phone: player?.phone || "N/A",
       score,
-      time: timeTaken,
+      time: totalTime,
       totalQuestions: questions.length,
       answers: finalAnswers,
+      language,
     };
-
-    console.log("RESULT:", payload);
 
     try {
       const res = await submitQuizGame(payload);
-
       if (res) {
         localStorage.setItem("game_quiz_done", "true");
       }
@@ -231,11 +280,35 @@ export default function Game1({ player }) {
     }
   };
 
+  const restartGame = () => {
+    setCurrent(0);
+    setSelected(null);
+    setAnswers([]);
+    setFinished(false);
+    setFinalScore(0);
+    setTimeTaken("0.00");
+    setStartTime(Date.now());
+  };
+
+  const handleBack = () => {
+    if (current > 0) {
+      const newAnswers = [...answers];
+      newAnswers.pop();
+
+      setCurrent((prev) => prev - 1);
+      setAnswers(newAnswers);
+      setSelected(answers[current - 1]?.selected || null);
+    } else {
+      navigate("/");
+    }
+  };
+
   const q = questions[current];
-  const progress = ((current + 1) / questions.length) * 100;
+  const progress = finished ? 100 : ((current + 1) / questions.length) * 100;
 
   return (
     <div
+      ref={containerRef}
       style={{
         minHeight: "100vh",
         background:
@@ -248,7 +321,6 @@ export default function Game1({ player }) {
         overflow: "hidden",
       }}
     >
-      {/* Animated Background Pattern */}
       <div
         style={{
           position: "absolute",
@@ -270,14 +342,41 @@ export default function Game1({ player }) {
         }}
       />
 
-      {/* Main Card */}
+      <div
+        className="floating-element"
+        style={{
+          top: "10%",
+          left: "5%",
+          fontSize: 44,
+          "--duration": "12s",
+          "--delay": "0s",
+          transform: `translate(${mousePosition.x * 0.3}px, ${mousePosition.y * 0.3}px)`,
+        }}
+      >
+        🌸
+      </div>
+
+      <div
+        className="floating-element"
+        style={{
+          bottom: "10%",
+          right: "8%",
+          fontSize: 38,
+          "--duration": "10s",
+          "--delay": "1s",
+          transform: `translate(${mousePosition.x * 0.4}px, ${mousePosition.y * 0.4}px)`,
+        }}
+      >
+        ✨
+      </div>
+
       <motion.div
         initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6 }}
         style={{
           width: "100%",
-          maxWidth: 620,
+          maxWidth: 720,
           position: "relative",
           zIndex: 10,
         }}
@@ -293,19 +392,21 @@ export default function Game1({ player }) {
           }}
           bodyStyle={{ padding: 32 }}
         >
-          {/* Decorative Header */}
           <div
             style={{
               marginBottom: 24,
               paddingBottom: 16,
               borderBottom: "2px dashed #FFD700",
-              position: "relative",
             }}
           >
             <div
               style={{
                 display: "flex",
-                justifyContent: "center",
+                justifyContent: "space-evenly",
+                alignItems: "center",
+                width: "100%",
+                maxWidth: 420,
+                margin: "0 auto",
                 marginBottom: 0,
               }}
             >
@@ -317,29 +418,29 @@ export default function Game1({ player }) {
                 transition={{ duration: 0.65 }}
                 style={{
                   width: 120,
-                  maxWidth: "80%",
                   height: "auto",
                   objectFit: "contain",
                   filter: "drop-shadow(0 8px 18px rgba(139, 69, 19, 0.18))",
                 }}
               />
+
+              <motion.img
+                src={AwuruduGames}
+                alt="Awurudu Games"
+                initial={{ opacity: 0, scale: 0.85, y: -10 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                transition={{ duration: 0.65 }}
+                style={{
+                  width: 180,
+                  height: "auto",
+                  objectFit: "contain",
+                }}
+              />
             </div>
+
             <h2
               style={{
-                color: "#8B4513",
-                fontSize: 20,
-                fontWeight: 900,
-                textAlign: "center",
-                background: "linear-gradient(135deg, #8B4513, #D2691E)",
-                WebkitBackgroundClip: "text",
-                WebkitTextFillColor: "transparent",
-              }}
-            >
-              WINWAY
-            </h2>
-            <h2
-              style={{
-                margin: "12px 0 8px",
+                margin: "12px 0 16px",
                 color: "#8B4513",
                 fontSize: 20,
                 fontWeight: 800,
@@ -349,186 +450,437 @@ export default function Game1({ player }) {
                 WebkitTextFillColor: "transparent",
               }}
             >
-              අවුරුදු ප්‍රශ්න මාලාව
+              {t.title}
             </h2>
           </div>
 
-          {/* Question Section */}
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={current}
-              initial={{ opacity: 0, x: 50 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -50 }}
-              transition={{ duration: 0.4 }}
-            >
-              <div
-                className="question-card"
-                style={{
-                  background: "linear-gradient(135deg, #FFF8E7, #FFEBCD)",
-                  border: "2px solid #FFD700",
-                  borderRadius: 24,
-                  padding: "24px 20px",
-                  marginBottom: 24,
-                  boxShadow: "inset 0 2px 10px rgba(0,0,0,0.02)",
-                }}
-              >
-                <h3
-                  style={{
-                    margin: 0,
-                    color: "#5c3b14",
-                    fontSize: 16,
-                    lineHeight: 1.6,
-                    fontWeight: 700,
-                  }}
+          {!finished ? (
+            <>
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={current}
+                  initial={{ opacity: 0, x: 50 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -50 }}
+                  transition={{ duration: 0.4 }}
                 >
-                  {q.question}
-                </h3>
-              </div>
-
-              {/* Options */}
-              <div
-                style={{ display: "flex", flexDirection: "column", gap: 12 }}
-              >
-                {q.options.map((opt, i) => (
-                  <motion.div
-                    key={opt}
-                    initial={{ opacity: 0, x: -30 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: i * 0.1 }}
+                  <div
+                    className="question-card"
+                    style={{
+                      background: "linear-gradient(135deg, #FFF8E7, #FFEBCD)",
+                      border: "2px solid #FFD700",
+                      borderRadius: 24,
+                      padding: "24px 20px",
+                      marginBottom: 24,
+                      boxShadow: "inset 0 2px 10px rgba(0,0,0,0.02)",
+                    }}
                   >
-                    <Button
-                      className="option-button"
-                      block
-                      onClick={() => handleSelect(opt)}
+                    <div
                       style={{
-                        height: 60,
-                        borderRadius: 20,
-                        fontWeight: 600,
-                        fontSize: 14,
-                        border:
-                          selected === opt
-                            ? "3px solid #FFD700"
-                            : "2px solid #f0f0f0",
-                        background:
-                          selected === opt
-                            ? "linear-gradient(135deg, #FFF9E6, #FFE4B5)"
-                            : "white",
-                        color: selected === opt ? "#8B4513" : "#666",
-                        boxShadow:
-                          selected === opt
-                            ? "0 10px 20px rgba(255,215,0,0.2)"
-                            : "0 5px 15px rgba(0,0,0,0.05)",
-                        transition: "all 0.3s ease",
+                        fontSize: 13,
+                        fontWeight: 700,
+                        color: "#A66B00",
+                        marginBottom: 10,
                       }}
                     >
-                      {opt}
+                      {t.questionLabel} {current + 1} / {questions.length}
+                    </div>
+
+                    <h3
+                      style={{
+                        margin: 0,
+                        color: "#5c3b14",
+                        fontSize: 16,
+                        lineHeight: 1.6,
+                        fontWeight: 700,
+                      }}
+                    >
+                      {q.question}
+                    </h3>
+                  </div>
+
+                  <div
+                    style={{
+                      display: "flex",
+                      flexDirection: "column",
+                      gap: 12,
+                    }}
+                  >
+                    {q.options.map((opt, i) => (
+                      <motion.div
+                        key={opt}
+                        initial={{ opacity: 0, x: -30 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: i * 0.1 }}
+                      >
+                        <Button
+                          className="option-button"
+                          block
+                          onClick={() => handleSelect(opt)}
+                          style={{
+                            height: 60,
+                            borderRadius: 20,
+                            fontWeight: 600,
+                            fontSize: 14,
+                            border:
+                              selected === opt
+                                ? "3px solid #FFD700"
+                                : "2px solid #f0f0f0",
+                            background:
+                              selected === opt
+                                ? "linear-gradient(135deg, #FFF9E6, #FFE4B5)"
+                                : "white",
+                            color: selected === opt ? "#8B4513" : "#666",
+                            boxShadow:
+                              selected === opt
+                                ? "0 10px 20px rgba(255,215,0,0.2)"
+                                : "0 5px 15px rgba(0,0,0,0.05)",
+                            transition: "all 0.3s ease",
+                          }}
+                        >
+                          {opt}
+                        </Button>
+                      </motion.div>
+                    ))}
+                  </div>
+                </motion.div>
+              </AnimatePresence>
+
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.5 }}
+                style={{
+                  marginTop: 28,
+                  display: "flex",
+                  gap: 12,
+                }}
+              >
+                <Button
+                  onClick={handleBack}
+                  style={{
+                    height: 56,
+                    borderRadius: 30,
+                    border: "2px solid #d41717",
+                    background: "linear-gradient(135deg, #FFF8E1, #d41717b7)",
+                    color: "#554646",
+                    fontWeight: 700,
+                    fontSize: 15,
+                    boxShadow: "0 10px 20px rgba(212,160,23,0.18)",
+                  }}
+                >
+                  {current > 0 ? t.previous : t.back}
+                </Button>
+
+                <Button
+                  type="primary"
+                  block
+                  disabled={!selected}
+                  onClick={handleSubmit}
+                  style={{
+                    height: 56,
+                    borderRadius: 30,
+                    background: selected
+                      ? "linear-gradient(135deg, #27AE60, #2ECC71)"
+                      : "#f0f0f0",
+                    border: "none",
+                    fontWeight: 800,
+                    fontSize: 15,
+                    boxShadow: selected
+                      ? "0 15px 30px rgba(39,174,96,0.3)"
+                      : "none",
+                    color: selected ? "white" : "#999",
+                  }}
+                >
+                  {current + 1 === questions.length ? t.finish : t.next}
+                </Button>
+              </motion.div>
+            </>
+          ) : (
+            <AnimatePresence>
+              <motion.div
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.4 }}
+              >
+                <div
+                  style={{
+                    background: "linear-gradient(135deg, #FFF9E6, #FFE4B5)",
+                    border: "3px solid #FFD700",
+                    borderRadius: 24,
+                    padding: "22px 18px",
+                    marginTop: 16,
+                    textAlign: "center",
+                    marginBottom: 20,
+                  }}
+                >
+                  <h2
+                    style={{
+                      color: "#8B4513",
+                      fontSize: 28,
+                      marginBottom: 18,
+                      fontWeight: 800,
+                    }}
+                  >
+                    {t.gameOver}
+                  </h2>
+
+                  <div
+                    style={{
+                      display: "grid",
+                      gridTemplateColumns:
+                        "repeat(auto-fit, minmax(180px, 1fr))",
+                      gap: 12,
+                      marginBottom: 20,
+                    }}
+                  >
+                    <div
+                      style={{
+                        background: "linear-gradient(135deg, #FFD700, #FFA500)",
+                        padding: "18px",
+                        borderRadius: 20,
+                      }}
+                    >
+                      <div
+                        style={{
+                          color: "#8B4513",
+                          fontSize: 14,
+                          marginBottom: 6,
+                          fontWeight: 700,
+                        }}
+                      >
+                        <TrophyOutlined /> {t.yourScore}
+                      </div>
+                      <div
+                        style={{
+                          color: "#8B4513",
+                          fontSize: 36,
+                          fontWeight: 800,
+                        }}
+                      >
+                        {finalScore} / {questions.length}
+                      </div>
+                    </div>
+
+                    <div
+                      style={{
+                        background: "linear-gradient(135deg, #E8F5E9, #C8E6C9)",
+                        padding: "18px",
+                        borderRadius: 20,
+                      }}
+                    >
+                      <div
+                        style={{
+                          color: "#2E7D32",
+                          fontSize: 14,
+                          marginBottom: 6,
+                          fontWeight: 700,
+                        }}
+                      >
+                        <ClockCircleOutlined /> {t.timeTaken}
+                      </div>
+                      <div
+                        style={{
+                          color: "#2E7D32",
+                          fontSize: 30,
+                          fontWeight: 800,
+                        }}
+                      >
+                        {timeTaken}s
+                      </div>
+                    </div>
+                  </div>
+
+                  <div
+                    style={{
+                      textAlign: "left",
+                      marginTop: 12,
+                    }}
+                  >
+                    <h3
+                      style={{
+                        color: "#8B4513",
+                        marginBottom: 14,
+                        fontSize: 18,
+                        fontWeight: 800,
+                        textAlign: "center",
+                      }}
+                    >
+                      {t.answerReview}
+                    </h3>
+
+                    <div
+                      style={{
+                        display: "flex",
+                        flexDirection: "column",
+                        gap: 14,
+                      }}
+                    >
+                      {answers.map((item, index) => (
+                        <div
+                          key={index}
+                          style={{
+                            background: item.isCorrect
+                              ? "linear-gradient(135deg, #F1FFF3, #E0F7E9)"
+                              : "linear-gradient(135deg, #FFF5F5, #FFE3E3)",
+                            border: item.isCorrect
+                              ? "2px solid #4CAF50"
+                              : "2px solid #FF6B6B",
+                            borderRadius: 18,
+                            padding: 16,
+                          }}
+                        >
+                          <div
+                            style={{
+                              display: "flex",
+                              alignItems: "center",
+                              gap: 8,
+                              marginBottom: 8,
+                              fontWeight: 800,
+                              color: "#5c3b14",
+                            }}
+                          >
+                            {item.isCorrect ? (
+                              <CheckCircleOutlined
+                                style={{ color: "#2E7D32" }}
+                              />
+                            ) : (
+                              <CloseCircleOutlined
+                                style={{ color: "#D32F2F" }}
+                              />
+                            )}
+                            {t.questionLabel} {index + 1}
+                          </div>
+
+                          <div
+                            style={{
+                              marginBottom: 10,
+                              color: "#5c3b14",
+                              fontWeight: 700,
+                              lineHeight: 1.6,
+                            }}
+                          >
+                            {item.question}
+                          </div>
+
+                          {item.correct !== item.selected && (
+                            <div style={{ color: "#555" }}>
+                              <div
+                                style={{
+                                  color: item.isCorrect ? "#2E7D32" : "#D32F2F",
+                                  fontWeight: 600,
+                                  marginBottom: 10,
+                                }}
+                              >
+                                <strong>{t.correctAnswer}</strong>{" "}
+                                {item.correct}
+                              </div>
+
+                              <div
+                                style={{
+                                  color: item.isCorrect ? "#2E7D32" : "#D32F2F",
+                                  fontWeight: 600,
+                                }}
+                              >
+                                <strong>{t.yourAnswer}</strong> {item.selected}
+                              </div>
+                            </div>
+                          )}
+
+                          {item.correct === item.selected && (
+                            <div
+                              style={{
+                                color: item.isCorrect ? "#2E7D32" : "#D32F2F",
+                                fontWeight: 600,
+                              }}
+                            >
+                              <strong>{t.yourAnswerCorrect}</strong>{" "}
+                              {item.selected}
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div
+                    style={{
+                      display: "flex",
+                      gap: 12,
+                      marginTop: 24,
+                      flexWrap: "wrap",
+                      justifyContent: "center",
+                    }}
+                  >
+       
+       
+
+                    <Button
+                      onClick={() => navigate("/")}
+                      style={{
+                        height: 48,
+                        padding: "0 32px",
+                        borderRadius: 30,
+                        fontWeight: 700,
+                        fontSize: 16,
+                        background: "linear-gradient(135deg, #27AE60, #2ECC71)",
+                        border: "none",
+                        color: "white",
+                        boxShadow: "0 10px 20px rgba(39,174,96,0.3)",
+                      }}
+                    >
+                      {t.goHome}
                     </Button>
-                  </motion.div>
-                ))}
-              </div>
-            </motion.div>
-          </AnimatePresence>
-          {/* Action Buttons */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.5 }}
+                  </div>
+                </div>
+              </motion.div>
+            </AnimatePresence>
+          )}
+
+          <div
             style={{
-              marginTop: 28,
+              marginTop: 24,
               display: "flex",
-              gap: 12,
+              justifyContent: "center",
+              gap: 16,
+              opacity: 0.6,
             }}
           >
-            <Button
-              onClick={() => {
-                if (current > 0) {
-                  setCurrent((prev) => prev - 1);
-                  setSelected(answers[current - 1]?.selected || null);
-                  setAnswers((prev) => prev.slice(0, -1));
-                } else {
-                  navigate("/");
-                }
-              }}
-                   style={{
-                height: 56,
-                borderRadius: 30,
-         
-                border: "2px solid #d41717",
-                background: "linear-gradient(135deg, #FFF8E1, #d41717b7)",
-                color: "#554646",
-                fontWeight: 700,
-                fontSize: 15,
-                boxShadow: "0 10px 20px rgba(212,160,23,0.18)",
-                transition: "all 0.3s ease",
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.transform = "translateY(-3px) scale(1.02)";
-                e.currentTarget.style.boxShadow =
-                  "0 16px 28px rgba(212,160,23,0.28)";
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.transform = "translateY(0) scale(1)";
-                e.currentTarget.style.boxShadow =
-                  "0 10px 20px rgba(212,160,23,0.18)";
-              }}
-            >
-              {current > 0 ? "පෙර" : "ආපසු"}
-            </Button>
-
-            <Button
-              type="primary"
-              block
-              disabled={!selected}
-              onClick={handleSubmit}
+            <span
               style={{
-                height: 56,
-                borderRadius: 30,
-                background: selected
-                  ? "linear-gradient(135deg, #27AE60, #2ECC71)"
-                  : "#f0f0f0",
-                border: "none",
-                fontWeight: 800,
-                fontSize: 15,
-                boxShadow: selected
-                  ? "0 15px 30px rgba(39,174,96,0.3)"
-                  : "none",
-                transition: "all 0.3s ease",
-                color: selected ? "white" : "#999",
-              }}
-              onMouseEnter={(e) => {
-                if (selected) {
-                  e.currentTarget.style.transform =
-                    "translateY(-3px) scale(1.02)";
-                  e.currentTarget.style.boxShadow =
-                    "0 20px 40px rgba(39,174,96,0.4)";
-                }
-              }}
-              onMouseLeave={(e) => {
-                if (selected) {
-                  e.currentTarget.style.transform = "translateY(0) scale(1)";
-                  e.currentTarget.style.boxShadow =
-                    "0 15px 30px rgba(39,174,96,0.3)";
-                }
+                fontSize: 20,
+                animation: "gentleFloat 3s ease-in-out infinite",
               }}
             >
-              {current + 1 === questions.length ? "අවසන් කරන්න" : "ඊළඟ"}
-            </Button>
-          </motion.div>
-    
-    
+              🌟
+            </span>
+            <span
+              style={{
+                fontSize: 20,
+                animation: "gentleFloat 3.5s ease-in-out infinite",
+              }}
+            >
+              🎯
+            </span>
+            <span
+              style={{
+                fontSize: 20,
+                animation: "gentleFloat 4s ease-in-out infinite",
+              }}
+            >
+              ✨
+            </span>
+            <span
+              style={{
+                fontSize: 20,
+                animation: "gentleFloat 2.5s ease-in-out infinite",
+              }}
+            >
+              🌸
+            </span>
+          </div>
         </Card>
       </motion.div>
-
-      {/* Game End Modal */}
-      <GameEndModal
-        open={showModal}
-        gameName="අවුරුදු ප්‍රශ්න මාලාව"
-        onClose={() => {
-          setShowModal(false);
-          navigate("/");
-        }}
-      />
     </div>
   );
 }

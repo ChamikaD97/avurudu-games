@@ -1,13 +1,12 @@
-import { Card, Button, Row, Col, message, Progress, Badge } from "antd";
+import { Card, Button, Row, Col, message } from "antd";
 import { useNavigate } from "react-router-dom";
 import { useState, useEffect, useMemo, useRef } from "react";
 import BonusSpinModal from "../components/BonusSpinModal";
 import bannerVideoMobile from "../assets/videos/Mobile.mp4";
 import bannerVideoWeb from "../assets/videos/Web.mp4";
-import Ada from "../assets/All lotteries/Ada Sampatha - Fri.jpg";
 import Dana from "../assets/All lotteries/DN- FRI.png";
 import Govi from "../assets/All lotteries/GS- FRI.png";
-
+import { useLanguage } from "../context/LanguageContext";
 import Handa from "../assets/All lotteries/H- SAT.png";
 import Mega from "../assets/All lotteries/MP- WED.png";
 import Maha from "../assets/All lotteries/MS- FRI.png";
@@ -31,6 +30,159 @@ export default function GamesHome() {
   const [floatingElements, setFloatingElements] = useState([]);
   const [isMobile, setIsMobile] = useState(false);
   const containerRef = useRef(null);
+  const { language } = useLanguage();
+
+  const uiText = {
+    si: {
+      sessionEnded: "සැසිය අවසන් කරන ලදී. නැවත එන්න! 👋",
+      alreadyCompleted: "ඔබ දැනටමත් මෙම ක්‍රීඩාව සම්පූර්ණ කර ඇත! 🎉",
+      finishCurrent: "කරුණාකර පළමුව වත්මන් ක්‍රීඩාව අවසන් කරන්න",
+      startingGameSuffix: "ආරම්භ කරමින්...",
+      completed: "සම්පූර්ණයි",
+      playing: "ක්‍රීඩා කරමින්",
+      playNowBadge: "ක්‍රීඩා කරන්න",
+      locked: "අගුළු දමා ඇත",
+      playButtonMobile: " ක්‍රීඩා කරන්න",
+      playButtonDesktop: "දැන් ක්‍රීඩා කරන්න ",
+      completedMobile: "✅ සම්පූර්ණයි",
+      completedDesktop: "සම්පූර්ණයි ✅",
+      lockedMobile: "🔒 අගුළු දමා ඇත",
+      lockedDesktop: "අගුළු දමා ඇත 🔒",
+      bonusTitleMobile: "Bonus Unlocked!",
+      bonusTitleDesktop: "Bonus Unlocked! 🎉",
+      bonusDescMobile: "සියලුම ක්‍රීඩා සම්පූර්ණ කළා!",
+      bonusDescDesktop: "ඔබ සියලුම ක්‍රීඩා සාර්ථකව සම්පූර්ණ කළා!",
+      luckyWheel: "වාසනාවන්ත රෝදය",
+      goldMedal: "රන් පදක්කම",
+      spinMobile: "Spin",
+      spinDesktop: "Spin the Wheel",
+      sessionMobile: "Session",
+      sessionDesktop: "Session Controls",
+      sessionDescMobile: "සියලු ප්‍රගතිය ඉවත් කර නැවත ආරම්භ කරන්න",
+      sessionDescDesktop: "සියලු ක්‍රීඩා ප්‍රගතිය ඉවත් කර නැවත ආරම්භ කරන්න",
+      endSessionMobile: "End Session",
+      endSessionDesktop: "End Session / Exit",sessionMobile: "මෙම සැසිය අවසන් කරන්න",
+sessionDesktop: "මෙම ක්‍රීඩා සැසිය අවසන් කරන්න",
+sessionDescMobile: "ඔබගේ වත්මන් ක්‍රීඩා සැසිය මෙතැනින් අවසන් කළ හැක.",
+sessionDescDesktop:
+  "ඔබගේ වත්මන් ක්‍රීඩා සැසිය අවසන් කර නැවත ආරම්භ කිරීමට මෙතැනින් හැක.",
+endSessionMobile: "සැසිය අවසන් කරන්න",
+endSessionDesktop: "ක්‍රීඩා සැසිය අවසන් කරන්න",
+      rewards: [
+        "",
+        "🔢 ගණිත ශූරතාව",
+        "",
+        "⚡ වේගවත් අත් ශූරතාව",
+        "🎯 නිරවද්‍යතා ශූරතාව",
+        "💪 බලවත් අත් ශූරතාව",
+      ],
+    },
+    ta: {
+      sessionEnded: "அமர்வு முடிக்கப்பட்டது. மீண்டும் வாருங்கள்! 👋",
+      alreadyCompleted:
+        "நீங்கள் ஏற்கனவே இந்த விளையாட்டை முடித்துவிட்டீர்கள்! 🎉",
+      finishCurrent: "தயவுசெய்து முதலில் தற்போதைய விளையாட்டை முடிக்கவும்",
+      startingGameSuffix: "தொடங்குகிறது...",
+      completed: "முடிந்தது",
+      playing: "விளையாடுகிறது",
+      playNowBadge: "விளையாடு",
+      locked: "பூட்டப்பட்டுள்ளது",
+      playButtonMobile: " விளையாடு",
+      playButtonDesktop: "இப்போது விளையாடுங்கள் ",
+      completedMobile: "✅ முடிந்தது",
+      completedDesktop: "முடிந்தது ✅",
+      lockedMobile: "🔒 பூட்டப்பட்டுள்ளது",
+      lockedDesktop: "பூட்டப்பட்டுள்ளது 🔒",
+      bonusTitleMobile: "Bonus Unlocked!",
+      bonusTitleDesktop: "Bonus Unlocked! 🎉",
+      bonusDescMobile: "அனைத்து விளையாட்டுகளும் முடிந்தது!",
+      bonusDescDesktop:
+        "நீங்கள் அனைத்து விளையாட்டுகளையும் வெற்றிகரமாக முடித்துவிட்டீர்கள்!",
+      luckyWheel: "அதிர்ஷ்ட சக்கரம்",
+      goldMedal: "தங்க பதக்கம்",
+      spinMobile: "சுழற்று",
+      spinDesktop: "சக்கரத்தை சுழற்று",
+      sessionMobile: "அமர்வு",
+      sessionDesktop: "Session Controls",
+      sessionDescMobile: "அனைத்து முன்னேற்றத்தையும் நீக்கி மீண்டும் தொடங்கவும்",
+      sessionDescDesktop:
+        "அனைத்து விளையாட்டு முன்னேற்றத்தையும் நீக்கி மீண்டும் தொடங்கவும்",
+      endSessionMobile: "அமர்வை முடிக்க",
+      endSessionDesktop: "அமர்வை முடிக்க / வெளியேறு",sessionMobile: "இந்த அமர்வை முடிக்கவும்",
+sessionDesktop: "இந்த விளையாட்டு அமர்வை முடிக்கவும்",
+sessionDescMobile: "உங்கள் தற்போதைய விளையாட்டு அமர்வை இங்கே முடிக்கலாம்.",
+sessionDescDesktop:
+  "உங்கள் தற்போதைய விளையாட்டு அமர்வை முடித்து மீண்டும் தொடங்க இங்கே முடியும்.",
+endSessionMobile: "அமர்வை முடிக்கவும்",
+endSessionDesktop: "விளையாட்டு அமர்வை முடிக்கவும்",
+      rewards: [
+        "",
+        "🔢 கணித சாம்பியன்",
+        "",
+        "⚡ வேகமான கைகள் சாம்பியன்",
+        "🎯 துல்லிய சாம்பியன்",
+        "💪 வலுவான கைகள் சாம்பியன்",
+      ],
+    },
+  };
+
+  const gameTexts = {
+    si: [
+      {
+        option: "අවුරුදු ප්‍රශ්න මාලාව",
+        description: "අවුරුදු දැනුම පරීක්ෂා කරන්න",
+      },
+      {
+        option: "කැවුම් ගණන හොයමු",
+        description: "කැවුම් ගණන නිවැරදිව තෝරන්න",
+      },
+      {
+        option: "සැඟවුණු පහන් හොයමු",
+        description: "රූපයේ සැඟවුණු දේ සොයන්න",
+      },
+      {
+        option: "තාලෙට රබන් ගහමු",
+        description: "ඉක්මනින් රබානට තට්ටු කරන්න",
+      },
+      {
+        option: "කැවුම් අල්ලමු",
+        description: "හැකි තරම් කැවුම් අල්ලමු",
+      },
+      {
+        option: "කණා මුට්ටිය බිඳිමු",
+        description: "මුට්ටිය ඉක්මනින් බිඳ දමන්න",
+      },
+    ],
+    ta: [
+      {
+        option: "புத்தாண்டு வினாடி வினா",
+        description: "புத்தாண்டு அறிவை சோதிக்கவும்",
+      },
+      {
+        option: "கவ்வும் எண்ணிக்கையை கண்டுபிடிப்போம்",
+        description: "சரியான கவ்வும் எண்ணிக்கையை தேர்வு செய்யவும்",
+      },
+      {
+        option: "மறைந்த விளக்குகளை கண்டுபிடிப்போம்",
+        description: "படத்தில் மறைந்தவற்றை கண்டுபிடிக்கவும்",
+      },
+      {
+        option: "ரபானாவை தாளத்தில் அடிப்போம்",
+        description: "ரபானாவை வேகமாக தட்டவும்",
+      },
+      {
+        option: "கவ்வும் பிடிப்போம்",
+        description: "அதிகமாக கவ்வும் பிடிக்கவும்",
+      },
+      {
+        option: "பானையை உடைப்போம்",
+        description: "பானையை விரைவாக உடைக்கவும்",
+      },
+    ],
+  };
+
+  const currentUi = uiText[language] || uiText.si;
+  const currentGameTexts = gameTexts[language] || gameTexts.si;
 
   // Check if mobile view
   useEffect(() => {
@@ -44,64 +196,64 @@ export default function GamesHome() {
 
   const data = [
     {
-      option: "අවුරුදු ප්‍රශ්න මාලාව",
+      option: currentGameTexts[0].option,
       route: "/game1",
       key: "game_quiz_done",
       color: "#ff7875",
       gradient: "linear-gradient(135deg, #ff7875, #ff9f4b)",
       icon: "❓",
-      description: "අවුරුදු දැනුම පරීක්ෂා කරන්න",
-      reward: "",
+      description: currentGameTexts[0].description,
+      reward: currentUi.rewards[0],
     },
     {
-      option: "කැවුම් ගණන හොයමු",
+      option: currentGameTexts[1].option,
       route: "/game2",
       key: "game_kavum_done",
       color: "#ffd666",
       gradient: "linear-gradient(135deg, #ffd666, #ffb347)",
       icon: "🍘",
-      description: "කැවුම් ගණන නිවැරදිව තෝරන්න",
-      reward: "🔢 ගණිත ශූරතාව",
+      description: currentGameTexts[1].description,
+      reward: currentUi.rewards[1],
     },
     {
-      option: "සැඟවුණු පහන් හොයමු",
+      option: currentGameTexts[2].option,
       route: "/game3",
       key: "game_lamps_done",
       color: "#69c0ff",
       gradient: "linear-gradient(135deg, #69c0ff, #5b8cff)",
       icon: "🔎",
-      description: "රූපයේ සැඟවුණු දේ සොයන්න",
-      reward: "",
+      description: currentGameTexts[2].description,
+      reward: currentUi.rewards[2],
     },
     {
-      option: "රබානට තට්ටු කරන්න",
+      option: currentGameTexts[3].option,
       route: "/rabana",
       key: "game_rabana_done",
       color: "#95de64",
       gradient: "linear-gradient(135deg, #95de64, #6bcf7f)",
       icon: "🥁",
-      description: "ඉක්මනින් රබානට තට්ටු කරන්න",
-      reward: "⚡ වේගවත් අත් ශූරතාව",
+      description: currentGameTexts[3].description,
+      reward: currentUi.rewards[3],
     },
     {
-      option: "කැවුම් අල්ලන්න",
+      option: currentGameTexts[4].option,
       route: "/kavum",
       key: "game_catch_kavum_done",
       color: "#b37feb",
       gradient: "linear-gradient(135deg, #b37feb, #9f6bdb)",
       icon: "🎯",
-      description: "හැකි තරම් කැවුම් අල්ලන්න",
-      reward: "🎯 නිරවද්‍යතා ශූරතාව",
+      description: currentGameTexts[4].description,
+      reward: currentUi.rewards[4],
     },
     {
-      option: "කණා මුට්ටි බිඳිමු",
+      option: currentGameTexts[5].option,
       route: "/break",
       key: "game_break_pot_done",
       color: "#ffa940",
       gradient: "linear-gradient(135deg, #ffa940, #ff8c5a)",
       icon: "🏺",
-      description: "මුට්ටිය ඉක්මනින් බිඳ දමන්න",
-      reward: "💪 බලවත් අත් ශූරතාව",
+      description: currentGameTexts[5].description,
+      reward: currentUi.rewards[5],
     },
   ];
 
@@ -125,7 +277,7 @@ export default function GamesHome() {
 
   const allGamesDone = useMemo(() => {
     return data.every((game) => completedGames[game.key]);
-  }, [completedGames]);
+  }, [completedGames, data]);
 
   // Trigger fireworks when all games completed
   useEffect(() => {
@@ -178,8 +330,7 @@ export default function GamesHome() {
 
       @keyframes pulseGlow {
         0%, 100% {
-          filter: drop-shadow(0 0 10px #f9ce1d
-);
+          filter: drop-shadow(0 0 10px #f9ce1d);
         }
         50% {
           filter: drop-shadow(0 0 25px rgba(255, 215, 0, 0.6));
@@ -194,15 +345,16 @@ export default function GamesHome() {
           background-position: 1000px 0;
         }
       }
-  .card-lottery-deco {
-  position: absolute;
-  pointer-events: none;
-  z-index: 1;
-  opacity: 1;
 
-animation: floatLottery 2s ease-in-out infinite;  
-filter: drop-shadow(0 8px 14px rgba(0, 0, 0, 0.18));
-}
+      .card-lottery-deco {
+        position: absolute;
+        pointer-events: none;
+        z-index: 1;
+        opacity: 1;
+        animation: floatLottery 2s ease-in-out infinite;
+        filter: drop-shadow(0 8px 14px rgba(0, 0, 0, 0.18));
+      }
+
       @keyframes firework {
         0% {
           transform: translate(-50%, -50%) scale(0);
@@ -217,6 +369,7 @@ filter: drop-shadow(0 8px 14px rgba(0, 0, 0, 0.18));
           opacity: 0;
         }
       }
+
       @keyframes floatLottery {
         0% {
           transform: translateY(0px) rotate(0deg);
@@ -231,6 +384,7 @@ filter: drop-shadow(0 8px 14px rgba(0, 0, 0, 0.18));
           opacity: 0.6;
         }
       }
+
       @keyframes rotateY {
         from {
           transform: rotateY(0deg);
@@ -309,12 +463,11 @@ filter: drop-shadow(0 8px 14px rgba(0, 0, 0, 0.18));
         -webkit-text-fill-color: transparent;
       }
 
-      /* Mobile specific adjustments */
       @media (max-width: 768px) {
         .games-home-card:hover {
           transform: translateY(-8px) scale(1.01);
         }
-        
+
         .games-home-card:active {
           transform: scale(0.98);
         }
@@ -333,7 +486,7 @@ filter: drop-shadow(0 8px 14px rgba(0, 0, 0, 0.18));
 
     const savedActive = localStorage.getItem("activeGame");
     if (savedActive) setActiveGame(savedActive);
-  }, []);
+  }, [language]);
 
   useEffect(() => {
     if (activeGame) {
@@ -343,7 +496,7 @@ filter: drop-shadow(0 8px 14px rgba(0, 0, 0, 0.18));
 
   const completedCount = useMemo(() => {
     return data.filter((game) => completedGames[game.key]).length;
-  }, [completedGames]);
+  }, [completedGames, data]);
 
   const handleEndSession = () => {
     localStorage.removeItem("activeGame");
@@ -356,7 +509,7 @@ filter: drop-shadow(0 8px 14px rgba(0, 0, 0, 0.18));
     setShowBonus(false);
 
     message.success({
-      content: "සැසිය අවසන් කරන ලදී. නැවත එන්න! 👋",
+      content: currentUi.sessionEnded,
       duration: 2,
       style: { marginTop: isMobile ? "10vh" : "20vh" },
     });
@@ -369,7 +522,7 @@ filter: drop-shadow(0 8px 14px rgba(0, 0, 0, 0.18));
 
     if (isCompleted) {
       message.warning({
-        content: "ඔබ දැනටමත් මෙම ක්‍රීඩාව සම්පූර්ණ කර ඇත! 🎉",
+        content: currentUi.alreadyCompleted,
         icon: <CheckCircleOutlined />,
         style: { marginTop: isMobile ? "10vh" : "20vh" },
       });
@@ -378,7 +531,7 @@ filter: drop-shadow(0 8px 14px rgba(0, 0, 0, 0.18));
 
     if (activeGame && activeGame !== game.route) {
       message.warning({
-        content: "කරුණාකර පළමුව වත්මන් ක්‍රීඩාව අවසන් කරන්න",
+        content: currentUi.finishCurrent,
         icon: <LockOutlined />,
         style: { marginTop: isMobile ? "10vh" : "20vh" },
       });
@@ -387,7 +540,7 @@ filter: drop-shadow(0 8px 14px rgba(0, 0, 0, 0.18));
 
     setActiveGame(game.route);
     message.success({
-      content: `🎮 ${game.option} ආරම්භ කරමින්...`,
+      content: ` ${game.option} ${currentUi.startingGameSuffix}`,
       duration: 1,
     });
     navigate(game.route);
@@ -395,7 +548,6 @@ filter: drop-shadow(0 8px 14px rgba(0, 0, 0, 0.18));
 
   return (
     <div
-      
       style={{
         minHeight: "100vh",
         background:
@@ -405,7 +557,6 @@ filter: drop-shadow(0 8px 14px rgba(0, 0, 0, 0.18));
         overflow: "hidden",
       }}
     >
-      {/* 🎬 Banner Video - Responsive */}
       <div
         className="games-card-animate"
         style={{
@@ -427,7 +578,6 @@ filter: drop-shadow(0 8px 14px rgba(0, 0, 0, 0.18));
           }}
         />
 
-        {/* Overlay */}
         <div
           style={{
             position: "absolute",
@@ -446,7 +596,6 @@ filter: drop-shadow(0 8px 14px rgba(0, 0, 0, 0.18));
         />
       </div>
 
-      {/* Animated Background Pattern (simplified for mobile) */}
       <div
         style={{
           position: "absolute",
@@ -468,7 +617,6 @@ filter: drop-shadow(0 8px 14px rgba(0, 0, 0, 0.18));
         }}
       />
 
-      {/* Fireworks Effect (fewer for mobile) */}
       {showFireworks && (
         <>
           {[...Array(isMobile ? 8 : 15)].map((_, i) => (
@@ -486,7 +634,6 @@ filter: drop-shadow(0 8px 14px rgba(0, 0, 0, 0.18));
         </>
       )}
 
-      {/* Main Content */}
       <div
         style={{
           maxWidth: isMobile ? "100%" : 1100,
@@ -497,7 +644,6 @@ filter: drop-shadow(0 8px 14px rgba(0, 0, 0, 0.18));
           padding: isMobile ? "20px 0" : "0",
         }}
       >
-        {/* Games Grid - Optimized for mobile */}
         <Row gutter={[isMobile ? 16 : 24, isMobile ? 16 : 24]} justify="center">
           {data.map((game, index) => {
             const isCompleted = completedGames[game.key];
@@ -540,7 +686,6 @@ filter: drop-shadow(0 8px 14px rgba(0, 0, 0, 0.18));
                       minHeight: isMobile ? 280 : 300,
                     }}
                   >
-                    {/* Status Badges - Adjusted for mobile */}
                     {isCompleted && (
                       <div
                         style={{
@@ -562,7 +707,7 @@ filter: drop-shadow(0 8px 14px rgba(0, 0, 0, 0.18));
                         <CheckCircleOutlined
                           style={{ fontSize: isMobile ? 10 : 12 }}
                         />
-                        {isMobile ? "සම්පූර්ණයි" : "සම්පූර්ණයි"}
+                        {currentUi.completed}
                       </div>
                     )}
 
@@ -613,12 +758,11 @@ filter: drop-shadow(0 8px 14px rgba(0, 0, 0, 0.18));
                         <FireOutlined
                           style={{ fontSize: isMobile ? 10 : 12 }}
                         />
-                        {isMobile ? "ක්‍රීඩා කරමින්" : "ක්‍රීඩා කරන්න"}
+                        {isMobile ? currentUi.playing : currentUi.playNowBadge}
                       </div>
                     )}
 
                     <div style={{ textAlign: "center" }}>
-                      {/* Icon with glow effect - Smaller on mobile */}
                       <div
                         style={{
                           width: isMobile ? 60 : 80,
@@ -653,11 +797,8 @@ filter: drop-shadow(0 8px 14px rgba(0, 0, 0, 0.18));
 
                       <p
                         style={{
-                          color: "#666",
-                          fontSize: isMobile ? 12 : 14,
-                          marginBottom: isMobile ? 12 : 16,
-                          minHeight: isMobile ? 32 : 40,
-                          lineHeight: 1.4,
+                          color: "#000000",
+                          fontSize: isMobile ? 15 : 14,
                           padding: isMobile ? "0 4px" : 0,
                         }}
                       >
@@ -669,21 +810,16 @@ filter: drop-shadow(0 8px 14px rgba(0, 0, 0, 0.18));
                       disabled={isLocked || isCompleted}
                       block
                       style={{
-                        marginTop: "auto",
                         borderRadius: 30,
-                        fontWeight: "bold",
                         height: isMobile ? 40 : 44,
-                        fontSize: isMobile ? 13 : 14,
-                        background: isCompleted
-                          ? "linear-gradient(135deg, #52c41a, #389e0d)"
-                          : isLocked
-                            ? "#d9d9d9"
-                            : game.gradient,
-                        color: "#fff",
+                        fontSize: isMobile ? 15 : 14,
+                        background:
+                          isCompleted || isLocked ? "#d9d9d9" : game.gradient,
+                        color: isCompleted || isLocked ? "#000000" : "#ffffff",
                         border: "none",
                         boxShadow: `0 8px 16px ${game.color}60`,
                         transition: "all 0.3s ease",
-                        touchAction: "manipulation", // Better touch response
+                        touchAction: "manipulation",
                       }}
                       onTouchStart={(e) => {
                         if (!isLocked && !isCompleted && isMobile) {
@@ -712,15 +848,15 @@ filter: drop-shadow(0 8px 14px rgba(0, 0, 0, 0.18));
                     >
                       {isCompleted
                         ? isMobile
-                          ? "✅ සම්පූර්ණයි"
-                          : "සම්පූර්ණයි ✅"
+                          ? currentUi.completedMobile
+                          : currentUi.completedDesktop
                         : isLocked
                           ? isMobile
-                            ? "🔒 අගුළු දමා ඇත"
-                            : "අගුළු දමා ඇත 🔒"
+                            ? currentUi.lockedMobile
+                            : currentUi.lockedDesktop
                           : isMobile
-                            ? "🎮 ක්‍රීඩා කරන්න"
-                            : "දැන් ක්‍රීඩා කරන්න 🎮"}
+                            ? currentUi.playButtonMobile
+                            : currentUi.playButtonDesktop}
                     </Button>
                   </Card>
                 </div>
@@ -728,6 +864,7 @@ filter: drop-shadow(0 8px 14px rgba(0, 0, 0, 0.18));
             );
           })}
         </Row>
+
         <img
           src={Dana}
           alt="Ada"
@@ -740,7 +877,6 @@ filter: drop-shadow(0 8px 14px rgba(0, 0, 0, 0.18));
             ["--duration"]: "7s",
           }}
         />
-        
 
         <img
           src={Mega}
@@ -767,6 +903,7 @@ filter: drop-shadow(0 8px 14px rgba(0, 0, 0, 0.18));
             ["--duration"]: "8s",
           }}
         />
+
         <img
           src={Govi}
           alt="Govi"
@@ -792,6 +929,7 @@ filter: drop-shadow(0 8px 14px rgba(0, 0, 0, 0.18));
             ["--duration"]: "7.2s",
           }}
         />
+
         <img
           src={Jaya}
           alt="Maha"
@@ -804,7 +942,7 @@ filter: drop-shadow(0 8px 14px rgba(0, 0, 0, 0.18));
             ["--duration"]: "7.2s",
           }}
         />
-        {/* Bonus Section - Responsive */}
+
         {allGamesDone && (
           <div
             className="games-card-animate"
@@ -862,7 +1000,9 @@ filter: drop-shadow(0 8px 14px rgba(0, 0, 0, 0.18));
                     marginBottom: isMobile ? 8 : 12,
                   }}
                 >
-                  {isMobile ? "Bonus Unlocked!" : "Bonus Unlocked! 🎉"}
+                  {isMobile
+                    ? currentUi.bonusTitleMobile
+                    : currentUi.bonusTitleDesktop}
                 </h2>
 
                 <p
@@ -873,8 +1013,8 @@ filter: drop-shadow(0 8px 14px rgba(0, 0, 0, 0.18));
                   }}
                 >
                   {isMobile
-                    ? "සියලුම ක්‍රීඩා සම්පූර්ණ කළා!"
-                    : "ඔබ සියලුම ක්‍රීඩා සාර්ථකව සම්පූර්ණ කළා!"}
+                    ? currentUi.bonusDescMobile
+                    : currentUi.bonusDescDesktop}
                 </p>
 
                 <div
@@ -902,8 +1042,9 @@ filter: drop-shadow(0 8px 14px rgba(0, 0, 0, 0.18));
                     >
                       🎡
                     </span>
-                    {isMobile ? "වාසනාවන්ත රෝදය" : "වාසනාවන්ත රෝදය"}
+                    {currentUi.luckyWheel}
                   </div>
+
                   <div
                     style={{
                       ...styles.rewardBadge,
@@ -918,7 +1059,7 @@ filter: drop-shadow(0 8px 14px rgba(0, 0, 0, 0.18));
                     >
                       🏆
                     </span>
-                    {isMobile ? "රන් පදක්කම" : "රන් පදක්කම"}
+                    {currentUi.goldMedal}
                   </div>
                 </div>
 
@@ -966,14 +1107,14 @@ filter: drop-shadow(0 8px 14px rgba(0, 0, 0, 0.18));
                     }
                   }}
                 >
-                  <GiftOutlined /> {isMobile ? "Spin" : "Spin the Wheel"} 🎡
+                  <GiftOutlined />{" "}
+                  {isMobile ? currentUi.spinMobile : currentUi.spinDesktop} 🎡
                 </Button>
               </div>
             </Card>
           </div>
         )}
 
-        {/* Session Controls - Responsive */}
         <div
           className="games-card-animate"
           style={{
@@ -1004,7 +1145,7 @@ filter: drop-shadow(0 8px 14px rgba(0, 0, 0, 0.18));
                 marginBottom: isMobile ? 8 : 12,
               }}
             >
-              🛑 {isMobile ? "Session" : "Session Controls"}
+              🛑 {isMobile ? currentUi.sessionMobile : currentUi.sessionDesktop}
             </h3>
 
             <p
@@ -1015,8 +1156,8 @@ filter: drop-shadow(0 8px 14px rgba(0, 0, 0, 0.18));
               }}
             >
               {isMobile
-                ? "සියලු ප්‍රගතිය ඉවත් කර නැවත ආරම්භ කරන්න"
-                : "සියලු ක්‍රීඩා ප්‍රගතිය ඉවත් කර නැවත ආරම්භ කරන්න"}
+                ? currentUi.sessionDescMobile
+                : currentUi.sessionDescDesktop}
             </p>
 
             <Button
@@ -1062,7 +1203,9 @@ filter: drop-shadow(0 8px 14px rgba(0, 0, 0, 0.18));
                 }
               }}
             >
-              {isMobile ? "End Session" : "End Session / Exit"}
+              {isMobile
+                ? currentUi.endSessionMobile
+                : currentUi.endSessionDesktop}
             </Button>
           </Card>
         </div>

@@ -16,9 +16,62 @@ import rabana from "../assets/rabana.png";
 import GameEndModal from "../components/GameEndModal";
 import tapSound from "../assets/sounds/raban.mp3";
 import { submitRabanaGame } from "../api/gameApi";
-
+import { useLanguage } from "../context/LanguageContext";
+import WINWAYLogo from "../assets/WIN WAY English Logo- PNG.png";
+import AwuruduGames from "../assets/Aluth Awurudu Games.png";
 export default function RabanaGame({ player }) {
   const navigate = useNavigate();
+  const { language } = useLanguage();
+
+  const text = {
+    si: {
+      badge: "රබාන වාදනය",
+      title: "තාලෙට රබන් ගහමු.",
+      subtitle:
+        "දෙන ලද කාලය තුල අකනණ්ඩව රබන් ගසා වැඩි ලකුනු ලබාගෙන තෑගි දිනා ගන්න.",
+      readyTitle: "වාදනයට සූදානම්ද?",
+      readyDesc: "කාලය අවසන් වීමට පෙර හැකි තරම් ඉක්මනින් රබානට තට්ටු කරන්න",
+      startGame: "ක්‍රීඩාව ආරම්භ කරන්න",
+      countdownTitle: "ආරම්භ වීමට තව තත්පර",
+      countdownDesc: "හැකි තරම් වේගයෙන් තට්ටු කරන්න සූදානම් වෙන්න!",
+      timeLeft: "ඉතිරි වේලාව",
+      score: "ලකුණු",
+      combo: "Combo",
+      tapFast: "ඉක්මනින් තට්ටු කර ලකුණු ලබාගන්න!",  goHome: "මුල් පිටුවට යන්න",
+      comboBonus: "bonus",
+      timeUp: "කාලය අවසන්!",
+      finalScore: "ඔබගේ අවසන් ලකුණු",
+      comboBonusLabel: "Combo bonus",
+      playAgain: "නැවත ක්‍රීඩා කරන්න",
+      guest: "Guest",
+      notAvailable: "N/A",
+    },
+    ta: {
+      badge: "ரபானா வாசிப்பு",
+      title: "தாளத்துக்கு ரபானா அடிப்போம்.",
+      subtitle:
+        "கொடுக்கப்பட்ட நேரத்தில் தொடர்ந்து ரபானாவை தட்டி அதிக மதிப்பெண் பெற்று பரிசுகளை வெல்லுங்கள்.",
+      readyTitle: "வாசிக்க தயாரா?",
+      readyDesc: "நேரம் முடிவதற்கு முன் முடிந்தவரை வேகமாக ரபானாவை தட்டுங்கள்", goHome: "முகப்பு பக்கத்துக்கு செல்லவும்",
+      startGame: "விளையாட்டை தொடங்கவும்",
+      countdownTitle: "தொடங்க இன்னும் விநாடிகள்",
+      countdownDesc: "முடிந்தவரை வேகமாக தட்ட தயாராகுங்கள்!",
+      timeLeft: "மீதமுள்ள நேரம்",
+      score: "மதிப்பெண்",
+      combo: "Combo",
+      tapFast: "வேகமாக தட்டி மதிப்பெண் பெறுங்கள்!",
+      comboBonus: "போனஸ்",
+      timeUp: "நேரம் முடிந்தது!",
+      finalScore: "உங்கள் இறுதி மதிப்பெண்",
+      comboBonusLabel: "Combo bonus",
+      playAgain: "மீண்டும் விளையாடுங்கள்",
+      guest: "Guest",
+      notAvailable: "N/A",
+    },
+  };
+
+  const t = text[language] || text.si;
+
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const containerRef = useRef(null);
 
@@ -37,7 +90,6 @@ export default function RabanaGame({ player }) {
 
   const audioRef = useRef(null);
 
-  // Track mouse for parallax effect
   useEffect(() => {
     const handleMouseMove = (e) => {
       if (containerRef.current) {
@@ -53,7 +105,6 @@ export default function RabanaGame({ player }) {
     return () => window.removeEventListener("mousemove", handleMouseMove);
   }, []);
 
-  // Generate particles on tap
   const createParticles = (x, y) => {
     const newParticles = [];
     for (let i = 0; i < 8; i++) {
@@ -72,7 +123,6 @@ export default function RabanaGame({ player }) {
     }, 500);
   };
 
-  // Inject enhanced animations
   useEffect(() => {
     const styleId = "rabana-festival-animations";
     if (document.getElementById(styleId)) return;
@@ -247,15 +297,16 @@ export default function RabanaGame({ player }) {
 
   useEffect(() => {
     audioRef.current = new Audio(tapSound);
-    audioRef.current.volume = 1;
+    audioRef.current.volume = 0.1;
   }, []);
 
   const handleFinish = async () => {
     try {
       const res = await submitRabanaGame({
-        name: player?.name || "Guest",
-        phone: player?.phone || "N/A",
+        name: player?.name || t.guest,
+        phone: player?.phone || t.notAvailable,
         score: score,
+        language,
       });
 
       if (res) {
@@ -278,7 +329,6 @@ export default function RabanaGame({ player }) {
     const now = Date.now();
     const diff = now - lastTap;
 
-    // Calculate combo
     if (diff < 250) {
       setCombo((prev) => prev + 1);
       setScore((prev) => prev + 2);
@@ -289,7 +339,6 @@ export default function RabanaGame({ player }) {
 
     setLastTap(now);
 
-    // Visual effects
     setAnimate(true);
     setRipple({ show: true, x: centerX, y: centerY });
     createParticles(centerX, centerY);
@@ -297,7 +346,6 @@ export default function RabanaGame({ player }) {
     setTimeout(() => setAnimate(false), 150);
     setTimeout(() => setRipple({ show: false, x: 0, y: 0 }), 300);
 
-    // Play sound
     if (audioRef.current) {
       audioRef.current.currentTime = 0;
       audioRef.current
@@ -334,7 +382,6 @@ export default function RabanaGame({ player }) {
     setParticles([]);
   };
 
-  // Generate beat bars based on tap frequency
   const beatBars = [];
   for (let i = 0; i < 5; i++) {
     beatBars.push({
@@ -345,7 +392,7 @@ export default function RabanaGame({ player }) {
 
   return (
     <div
-      
+      ref={containerRef}
       style={{
         minHeight: "100vh",
         background:
@@ -358,7 +405,6 @@ export default function RabanaGame({ player }) {
         overflow: "hidden",
       }}
     >
-      {/* Animated Background Pattern */}
       <div
         style={{
           position: "absolute",
@@ -380,7 +426,6 @@ export default function RabanaGame({ player }) {
         }}
       />
 
-      {/* Floating Decorative Elements */}
       <div
         className="floating-element"
         style={{
@@ -447,7 +492,6 @@ export default function RabanaGame({ player }) {
         🔊
       </div>
 
-      {/* Main Card */}
       <motion.div
         initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
@@ -471,7 +515,6 @@ export default function RabanaGame({ player }) {
           }}
           bodyStyle={{ padding: 32 }}
         >
-          {/* Decorative Header */}
           <div
             style={{
               marginBottom: 24,
@@ -497,28 +540,40 @@ export default function RabanaGame({ player }) {
             <div
               style={{
                 display: "flex",
+                justifyContent: "space-evenly",
                 alignItems: "center",
-                justifyContent: "center",
-                gap: 10,
-                marginBottom: 10,
+                width: "100%",
+                maxWidth: 420,
+                margin: "0 auto",
+                marginBottom: 0,
               }}
             >
-              <ThunderboltOutlined style={{ color: "#FFD700", fontSize: 24 }} />
-              <span style={{ color: "#8B4513", fontWeight: 600, fontSize: 16 }}>
-                රබාන වාදනය
-              </span>
-              <ThunderboltOutlined style={{ color: "#FFD700", fontSize: 24 }} />
-            </div>
+              <motion.img
+                src={WINWAYLogo}
+                alt="Winway Logo"
+                initial={{ opacity: 0, scale: 0.85, y: -10 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                transition={{ duration: 0.65 }}
+                style={{
+                  width: 120,
+                  height: "auto",
+                  objectFit: "contain",
+                  filter: "drop-shadow(0 8px 18px rgba(139, 69, 19, 0.18))",
+                }}
+              />
 
-            <div
-              style={{
-                fontSize: 60,
-                textAlign: "center",
-                marginBottom: 10,
-                animation: "gentleFloat 3s ease-in-out infinite",
-              }}
-            >
-              🥁
+              <motion.img
+                src={AwuruduGames}
+                alt="Awurudu Games"
+                initial={{ opacity: 0, scale: 0.85, y: -10 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                transition={{ duration: 0.65 }}
+                style={{
+                  width: 180,
+                  height: "auto",
+                  objectFit: "contain",
+                }}
+              />
             </div>
 
             <h2
@@ -533,16 +588,14 @@ export default function RabanaGame({ player }) {
                 WebkitTextFillColor: "transparent",
               }}
             >
-              රබානට තට්ටු කරන්න
+              {t.title}
             </h2>
 
-            <p style={{ textAlign: "center", color: "#7a7a7a", fontSize: 15 }}>
-              හැකි තරම් ඉක්මනින් රබානට තට්ටු කරලා, අඛණ්ඩ වේගවත් තට්ටු කිරීමෙන්
-              වැඩි ලකුණු ලබාගන්න!
+            <p style={{ textAlign: "center", color: "#000000", fontSize: 18 }}>
+              {t.subtitle}
             </p>
           </div>
 
-          {/* Start Screen */}
           {!startClicked && (
             <motion.div
               initial={{ opacity: 0, scale: 0.9 }}
@@ -561,16 +614,6 @@ export default function RabanaGame({ player }) {
                 textAlign: "center",
               }}
             >
-              <div
-                style={{
-                  fontSize: 54,
-                  marginBottom: 10,
-                  animation: "gentleFloat 2s ease-in-out infinite",
-                }}
-              >
-                🎯
-              </div>
-
               <h3
                 style={{
                   marginBottom: 10,
@@ -579,7 +622,7 @@ export default function RabanaGame({ player }) {
                   fontWeight: 700,
                 }}
               >
-                වාදනයට සූදානම්ද?
+                {t.readyTitle}
               </h3>
 
               <p
@@ -590,7 +633,7 @@ export default function RabanaGame({ player }) {
                   fontSize: 15,
                 }}
               >
-                කාලය අවසන් වීමට පෙර හැකි තරම් ඉක්මනින් රබානට තට්ටු කරන්න
+                {t.readyDesc}
               </p>
 
               <Button
@@ -625,12 +668,11 @@ export default function RabanaGame({ player }) {
                     "0 10px 24px rgba(228,77,46,0.3)";
                 }}
               >
-                ක්‍රීඩාව ආරම්භ කරන්න
+                {t.startGame}
               </Button>
             </motion.div>
           )}
 
-          {/* Countdown */}
           {startClicked && !gameStarted && (
             <motion.div
               initial={{ opacity: 0, scale: 0.9 }}
@@ -646,7 +688,7 @@ export default function RabanaGame({ player }) {
               }}
             >
               <h2 style={{ marginBottom: 20, color: "#8B4513" }}>
-                ආරම්භ වීමට තව තත්පර
+                {t.countdownTitle}
               </h2>
               <div
                 style={{
@@ -667,13 +709,10 @@ export default function RabanaGame({ player }) {
               >
                 {countdown}
               </div>
-              <p style={{ color: "#777", marginTop: 25 }}>
-                හැකි තරම් වේගයෙන් තට්ටු කරන්න සූදානම් වෙන්න!
-              </p>
+              <p style={{ color: "#777", marginTop: 25 }}>{t.countdownDesc}</p>
             </motion.div>
           )}
 
-          {/* Game Stats */}
           {gameStarted && !finished && (
             <motion.div
               initial={{ opacity: 0, y: 20 }}
@@ -709,7 +748,7 @@ export default function RabanaGame({ player }) {
                     gap: 4,
                   }}
                 >
-                  <ClockCircleOutlined /> ඉතිරි වේලාව
+                  <ClockCircleOutlined /> {t.timeLeft}
                 </div>
 
                 <div
@@ -752,7 +791,7 @@ export default function RabanaGame({ player }) {
                     gap: 4,
                   }}
                 >
-                  <TrophyOutlined /> ලකුණු
+                  <TrophyOutlined /> {t.score}
                 </div>
 
                 <div
@@ -779,15 +818,14 @@ export default function RabanaGame({ player }) {
                       color: "#8B4513",
                     }}
                   >
-                    Combo x{combo}!
+                    {t.combo} x{combo}!
                   </div>
                 )}
               </div>
             </motion.div>
           )}
 
-          {/* Rabana Drum */}
-          {gameStarted && (
+          {gameStarted && !finished && (
             <motion.div
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
@@ -811,7 +849,6 @@ export default function RabanaGame({ player }) {
                 onClick={tap}
               />
 
-              {/* Ripple effect */}
               {ripple.show && (
                 <div
                   className="ripple-effect"
@@ -822,7 +859,6 @@ export default function RabanaGame({ player }) {
                 />
               )}
 
-              {/* Particles */}
               {particles.map((particle) => (
                 <div
                   key={particle.id}
@@ -836,7 +872,6 @@ export default function RabanaGame({ player }) {
                 />
               ))}
 
-              {/* Beat indicator */}
               {gameStarted && !finished && (
                 <div className="beat-indicator">
                   {beatBars.map((bar, i) => (
@@ -855,7 +890,6 @@ export default function RabanaGame({ player }) {
             </motion.div>
           )}
 
-          {/* Instruction */}
           {gameStarted && !finished && (
             <motion.p
               initial={{ opacity: 0 }}
@@ -871,15 +905,13 @@ export default function RabanaGame({ player }) {
                 flexDirection: "column",
                 alignItems: "center",
                 justifyContent: "center",
-                textAlign: "center",
               }}
             >
-              ඉක්මනින් තට්ටු කර ලකුණු ලබාගන්න!{" "}
-              {combo > 1 && `(Combo: +${combo} bonus)`}
+              {t.tapFast}{" "}
+              {combo > 1 && `(${t.combo}: +${combo} ${t.comboBonus})`}
             </motion.p>
           )}
 
-          {/* Finished Screen */}
           <AnimatePresence>
             {finished && (
               <motion.div
@@ -895,16 +927,8 @@ export default function RabanaGame({ player }) {
                   textAlign: "center",
                 }}
               >
-                <motion.div
-                  animate={{ rotate: [0, 10, -10, 0] }}
-                  transition={{ duration: 0.5 }}
-                  style={{ fontSize: 64, marginBottom: 10 }}
-                >
-                  ⏰
-                </motion.div>
-
                 <h2 style={{ color: "#8B4513", fontSize: 28, marginBottom: 8 }}>
-                  කාලය අවසන්!
+                  {t.timeUp}
                 </h2>
 
                 <div
@@ -916,9 +940,14 @@ export default function RabanaGame({ player }) {
                   }}
                 >
                   <div
-                    style={{ color: "#8B4513", fontSize: 14, marginBottom: 5 }}
+                    style={{
+                      color: "#8B4513",
+                      fontSize: 16,
+                      marginBottom: 5,
+                      fontWeight: "500",
+                    }}
                   >
-                    ඔබගේ අවසන් ලකුණු
+                    {t.finalScore}
                   </div>
                   <h3
                     style={{
@@ -932,22 +961,26 @@ export default function RabanaGame({ player }) {
                   </h3>
                   {combo > 1 && (
                     <div style={{ color: "#8B4513", fontSize: 14 }}>
-                      Combo bonus: +{combo * 2}
+                      {t.comboBonusLabel}: +{combo * 2}
                     </div>
                   )}
                 </div>
 
-                <Button
-                  onClick={restartGame}
+         
+                 <Button
+                  onClick={() => {
+                    navigate("/");
+                  }}
                   style={{
-                    height: 46,
-                    borderRadius: 23,
+                    height: 48,
+                    padding: "0 32px",
+                    borderRadius: 30,
                     fontWeight: 700,
-                    border: "2px solid #FFD700",
-                    background: "white",
-                    color: "#8B4513",
+                    fontSize: 16,
+                    background: "linear-gradient(135deg, #27AE60, #2ECC71)",
+                    border: "none",
+                    boxShadow: "0 10px 20px rgba(39,174,96,0.3)",
                     transition: "all 0.3s ease",
-                    padding: "0 30px",
                   }}
                   onMouseEnter={(e) => {
                     e.currentTarget.style.transform = "translateY(-2px)";
@@ -959,13 +992,12 @@ export default function RabanaGame({ player }) {
                     e.currentTarget.style.boxShadow = "none";
                   }}
                 >
-                  නැවත ක්‍රීඩා කරන්න
+                  {t.goHome}
                 </Button>
               </motion.div>
             )}
           </AnimatePresence>
 
-          {/* Decorative Footer */}
           <div
             style={{
               marginTop: 24,
@@ -1010,12 +1042,6 @@ export default function RabanaGame({ player }) {
           </div>
         </Card>
       </motion.div>
-
-      <GameEndModal
-        open={showModal}
-        gameName="රබානට තට්ටු කරන්න"
-        onClose={() => navigate("/")}
-      />
     </div>
   );
 }
