@@ -35,6 +35,7 @@ export const translations = {
     enterBoth: "කරුණාකර නම සහ දුරකථන අංකය ඇතුළත් කරන්න",
     invalidPhone: "වලංගු ජංගම දුරකථන අංකයක් ඇතුළත් කරන්න (07XXXXXXXX)",
     welcomeMsg: "සාදරයෙන් පිළිගනිමු! 🎉",
+    err: "යම් දෝෂයක් සිදු විය. කරුණාකර නැවත උත්සාහ කරන්න.",
 
     // Game common
     playNow: "දැන් ක්‍රීඩා කරන්න",
@@ -138,6 +139,7 @@ export const translations = {
     invalidPhone: "சரியான மொபைல் எண்ணை உள்ளிடவும் (07XXXXXXXX)",
     welcomeMsg: "வரவேற்கிறோம்! 🎉",
 
+    err: "ஏதோ தவறு ஏற்பட்டுள்ளது. தயவுசெய்து மீண்டும் முயற்சிக்கவும்..",
     // Game common
     playNow: "இப்போது விளையாடுங்கள்",
     playAgain: "மீண்டும் விளையாடுங்கள்",
@@ -230,7 +232,10 @@ export function LanguageProvider({ children }) {
     }
   };
 
-  const t = useMemo(() => translations[language] || translations.si, [language]);
+  const t = useMemo(
+    () => translations[language] || translations.si,
+    [language],
+  );
 
   return (
     <LanguageContext.Provider value={{ language, changeLanguage, t }}>

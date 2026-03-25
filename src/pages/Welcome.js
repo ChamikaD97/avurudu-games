@@ -51,11 +51,18 @@ export default function Welcome({ setPlayer }) {
   }, []);
 
   useEffect(() => {
-    const saved = localStorage.getItem("player");
-    if (saved) {
-      const data = JSON.parse(saved);
-      setName(data.name || "");
-      setMobile(data.phone || data.mobile || "");
+    try {
+      const saved = localStorage.getItem("player");
+
+      if (!saved) return;
+
+      const data = typeof saved === "string" ? JSON.parse(saved) : saved;
+
+      setName(data?.name || "");
+      setMobile(data?.phone || data?.mobile || "");
+    } catch (err) {
+      console.error("Invalid player data, clearing...");
+      localStorage.removeItem("player");
     }
   }, []);
 
@@ -363,7 +370,6 @@ export default function Welcome({ setPlayer }) {
       const res = await checkOrLoginPlayer({
         fullName: name.trim(),
         phone: mobile.trim(),
-        language,
       });
 
       if (!res?.success) {
@@ -386,11 +392,10 @@ export default function Welcome({ setPlayer }) {
         _id: res.player?._id,
         name: res.player?.fullName || name.trim(),
         phone: res.player?.phone || mobile.trim(),
-        language,
       };
 
       localStorage.setItem("player", JSON.stringify(playerData));
-      localStorage.setItem("appLanguage", language);
+      localStorage.setItem("appLanguage", JSON.stringify(language));
 
       setPlayer(playerData);
 
@@ -406,7 +411,7 @@ export default function Welcome({ setPlayer }) {
     } catch (error) {
       console.error("handleStart error:", error);
       message.error({
-        content: "Something went wrong. Please try again.",
+        content: t.err,
         style: { marginTop: "20vh" },
       });
     } finally {

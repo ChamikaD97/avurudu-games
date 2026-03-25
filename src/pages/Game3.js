@@ -228,8 +228,28 @@ export default function Game3({ player }) {
     };
 
     try {
-      await submitHiddenLampsGame(payload);
-      localStorage.setItem("game_lamps_done", "true");
+      const res = await submitHiddenLampsGame(payload);
+
+      if (res?.success) {
+        // ✅ Get existing progress
+        const existing = JSON.parse(
+          localStorage.getItem("gamesPlayed") || "{}",
+        );
+
+        // ✅ Update Hidden Lamps
+        existing["hidden_lamps"] = {
+          completed: true,
+          score,
+          isCorrect: answerCorrect,
+          time: totalTime,
+          selectedAnswer: selected,
+          correctAnswer,
+          completedAt: new Date().toISOString(),
+        };
+
+        // ✅ Save back
+        localStorage.setItem("gamesPlayed", JSON.stringify(existing));
+      }
     } catch (err) {
       console.log("Save failed");
     }
@@ -245,15 +265,45 @@ export default function Game3({ player }) {
     handleFinish();
   };
 
-  const restartGame = () => {
-    setSelected(null);
-    setFinished(false);
-    setIsCorrect(false);
-    setTimeTaken("0.00");
-    setSubmitting(false);
-    setStartTime(Date.now());
-  };
+  const handleNext = () => {
+    const progress = JSON.parse(localStorage.getItem("gamesPlayed") || "{}");
 
+    const keyMap = {
+      game_quiz_done: "quiz",
+      game_kavum_done: "kavum_count",
+      game_lamps_done: "hidden_lamps",
+      game_rabana_done: "rabana",
+      game_catch_kavum_done: "catch_kavum",
+      game_break_pot_done: "break_pot",
+    };
+
+    const gamesFlow = [
+      { key: "game_quiz_done", route: "/game1" },
+      { key: "game_kavum_done", route: "/game2" },
+      { key: "game_lamps_done", route: "/game3" },
+      { key: "game_rabana_done", route: "/rabana" },
+      { key: "game_catch_kavum_done", route: "/kavum" },
+      { key: "game_break_pot_done", route: "/break" },
+    ];
+
+    
+    for (let game of gamesFlow) {
+      const cleanKey = keyMap[game.key];
+      const isDone = progress?.[cleanKey]?.completed;
+
+      if (!isDone) {
+        navigate(game.route); // ✅ go next game
+        return;
+      }
+    }
+
+    // ✅ all completed
+    console.log(progress);
+
+    // ✅ all completed
+       navigate("/"); // or show bonus modal
+
+  };
   return (
     <div
       ref={containerRef}
@@ -407,7 +457,7 @@ export default function Game3({ player }) {
               }}
             />
 
-                   <div
+            <div
               style={{
                 display: "flex",
                 justifyContent: "space-evenly",
@@ -762,13 +812,11 @@ export default function Game3({ player }) {
                     style={{
                       display: "flex",
                       gap: 12,
+                      marginTop: 24,
                       flexWrap: "wrap",
-                      justifyContent: "center",
+                      justifyContent: "space-between",
                     }}
                   >
-        
-        
-
                     <Button
                       onClick={() => navigate("/")}
                       style={{
@@ -777,13 +825,30 @@ export default function Game3({ player }) {
                         borderRadius: 30,
                         fontWeight: 700,
                         fontSize: 16,
-                        background: "linear-gradient(135deg, #27AE60, #2ECC71)",
+                        background: "linear-gradient(135deg, #1677ff, #4096ff)", // 🔵 BLUE
+                        border: "none",
+                        color: "white",
+                        boxShadow: "0 10px 20px rgba(22,119,255,0.3)",
+                      }}
+                    >
+                      {t.goHome}
+                    </Button>
+
+                    <Button
+                      onClick={() => handleNext()}
+                      style={{
+                        height: 48,
+                        padding: "0 32px",
+                        borderRadius: 30,
+                        fontWeight: 700,
+                        fontSize: 16,
+                        background: "linear-gradient(135deg, #27AE60, #2ECC71)", // 🟢 GREEN (primary)
                         border: "none",
                         color: "white",
                         boxShadow: "0 10px 20px rgba(39,174,96,0.3)",
                       }}
                     >
-                      {t.goHome}
+                      Next Question
                     </Button>
                   </div>
                 </div>

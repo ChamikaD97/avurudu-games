@@ -97,6 +97,44 @@ export default function BreakPot({ player }) {
 
   const MAX_HITS = 8;
   const remainingHits = MAX_HITS - hits;
+  const handleNext = () => {
+    const progress = JSON.parse(localStorage.getItem("gamesPlayed") || "{}");
+
+    const keyMap = {
+      game_quiz_done: "quiz",
+      game_kavum_done: "kavum_count",
+      game_lamps_done: "hidden_lamps",
+      game_rabana_done: "rabana",
+      game_catch_kavum_done: "catch_kavum",
+      game_break_pot_done: "break_pot",
+    };
+
+    const gamesFlow = [
+      { key: "game_quiz_done", route: "/game1" },
+      { key: "game_kavum_done", route: "/game2" },
+      { key: "game_lamps_done", route: "/game3" },
+      { key: "game_rabana_done", route: "/rabana" },
+      { key: "game_catch_kavum_done", route: "/kavum" },
+      { key: "game_break_pot_done", route: "/break" },
+    ];
+
+    for (let game of gamesFlow) {
+      const cleanKey = keyMap[game.key];
+      const isDone = progress?.[cleanKey]?.completed;
+
+      if (!isDone) {
+        navigate(game.route); // ✅ go next game
+        return;
+      }
+    }
+
+    // ✅ all completed
+    console.log(progress);
+
+    // ✅ all completed
+       navigate("/"); // or show bonus modal
+
+  };
 
   useEffect(() => {
     const handleMouseMove = (e) => {
@@ -309,7 +347,21 @@ export default function BreakPot({ player }) {
       });
 
       if (res?.success) {
-        localStorage.setItem("game_break_pot_done", "true");
+        // ✅ Get existing progress
+        const existing = JSON.parse(
+          localStorage.getItem("gamesPlayed") || "{}",
+        );
+
+        // ✅ Update Break Pot game
+        existing["break_pot"] = {
+          completed: true,
+          finalTime: finishTime,
+          score: finishTime,
+          completedAt: new Date().toISOString(),
+        };
+
+        // ✅ Save back
+        localStorage.setItem("gamesPlayed", JSON.stringify(existing));
       }
     } catch (err) {
       console.log("Failed to save", err);
@@ -983,34 +1035,49 @@ export default function BreakPot({ player }) {
                     {finalTime?.toFixed(2)}s
                   </h3>
                 </div>
-
-                <Button
-                  onClick={() => {
-                    navigate("/");
-                  }}
+                <div
                   style={{
-                    height: 48,
-                    padding: "0 32px",
-                    borderRadius: 30,
-                    fontWeight: 700,
-                    fontSize: 16,
-                    background: "linear-gradient(135deg, #27AE60, #2ECC71)",
-                    border: "none",
-                    boxShadow: "0 10px 20px rgba(39,174,96,0.3)",
-                    transition: "all 0.3s ease",
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.transform = "translateY(-2px)";
-                    e.currentTarget.style.boxShadow =
-                      "0 10px 20px rgba(255,215,0,0.3)";
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.transform = "translateY(0)";
-                    e.currentTarget.style.boxShadow = "none";
+                    display: "flex",
+                    gap: 12,
+                    marginTop: 24,
+                    flexWrap: "wrap",
+                    justifyContent: "space-between",
                   }}
                 >
-                  {t.goHome}
-                </Button>
+                  <Button
+                    onClick={() => navigate("/")}
+                    style={{
+                      height: 48,
+                      padding: "0 32px",
+                      borderRadius: 30,
+                      fontWeight: 700,
+                      fontSize: 16,
+                      background: "linear-gradient(135deg, #1677ff, #4096ff)", // 🔵 BLUE
+                      border: "none",
+                      color: "white",
+                      boxShadow: "0 10px 20px rgba(22,119,255,0.3)",
+                    }}
+                  >
+                    {t.goHome}
+                  </Button>
+
+                  <Button
+                    onClick={() => handleNext()}
+                    style={{
+                      height: 48,
+                      padding: "0 32px",
+                      borderRadius: 30,
+                      fontWeight: 700,
+                      fontSize: 16,
+                      background: "linear-gradient(135deg, #27AE60, #2ECC71)", // 🟢 GREEN (primary)
+                      border: "none",
+                      color: "white",
+                      boxShadow: "0 10px 20px rgba(39,174,96,0.3)",
+                    }}
+                  >
+                    Next Question
+                  </Button>
+                </div>
               </motion.div>
             )}
           </AnimatePresence>

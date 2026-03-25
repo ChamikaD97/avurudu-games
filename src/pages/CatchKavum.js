@@ -122,7 +122,44 @@ export default function CatchKavum({ player }) {
       setParticles([]);
     }, 500);
   };
+  const handleNext = () => {
+    const progress = JSON.parse(localStorage.getItem("gamesPlayed") || "{}");
 
+    const keyMap = {
+      game_quiz_done: "quiz",
+      game_kavum_done: "kavum_count",
+      game_lamps_done: "hidden_lamps",
+      game_rabana_done: "rabana",
+      game_catch_kavum_done: "catch_kavum",
+      game_break_pot_done: "break_pot",
+    };
+
+    const gamesFlow = [
+      { key: "game_quiz_done", route: "/game1" },
+      { key: "game_kavum_done", route: "/game2" },
+      { key: "game_lamps_done", route: "/game3" },
+      { key: "game_rabana_done", route: "/rabana" },
+      { key: "game_catch_kavum_done", route: "/kavum" },
+      { key: "game_break_pot_done", route: "/break" },
+    ];
+
+    for (let game of gamesFlow) {
+      const cleanKey = keyMap[game.key];
+      const isDone = progress?.[cleanKey]?.completed;
+
+      if (!isDone) {
+        navigate(game.route); // ✅ go next game
+        return;
+      }
+    }
+
+    // ✅ all completed
+    console.log(progress);
+
+    // ✅ all completed
+       navigate("/"); // or show bonus modal
+
+  };
   // Inject enhanced animations
   useEffect(() => {
     const styleId = "catchkavum-festival-animations";
@@ -299,7 +336,6 @@ export default function CatchKavum({ player }) {
       moveSoundRef.current.play().catch(() => {});
     }
   };
-
   const handleFinish = async () => {
     try {
       const res = await submitCatchKavumGame({
@@ -309,9 +345,23 @@ export default function CatchKavum({ player }) {
         language,
       });
 
-      if (res) {
-        localStorage.setItem("game_catch_kavum_done", "true");
+      if (res?.success) {
+        // ✅ Get existing data
+        const existing = JSON.parse(
+          localStorage.getItem("gamesPlayed") || "{}",
+        );
+
+        // ✅ Update Catch Kavum
+        existing["catch_kavum"] = {
+          completed: true,
+          score: score,
+          completedAt: new Date().toISOString(),
+        };
+
+        // ✅ Save back
+        localStorage.setItem("gamesPlayed", JSON.stringify(existing));
       }
+
       setFinished(true);
       setShowModal(true);
     } catch (err) {
@@ -601,8 +651,6 @@ export default function CatchKavum({ player }) {
                 textAlign: "center",
               }}
             >
-             
-             
               <h3
                 style={{
                   marginBottom: 10,
@@ -879,8 +927,6 @@ export default function CatchKavum({ player }) {
                   justifyContent: "center",
                 }}
               >
-                
-
                 <h2 style={{ color: "#8B4513", fontSize: 28, marginBottom: 8 }}>
                   {t.timeUp}
                 </h2>
@@ -894,8 +940,7 @@ export default function CatchKavum({ player }) {
                   }}
                 >
                   <div
-                                       style={{ color: "#8B4513", fontSize: 16, marginBottom: 5 }}
-
+                    style={{ color: "#8B4513", fontSize: 16, marginBottom: 5 }}
                   >
                     {t.caughtCount}
                   </div>
@@ -910,61 +955,79 @@ export default function CatchKavum({ player }) {
                     {score}
                   </h3>
                 </div>
-                {score === 0 && (
-                  <Button
-                    onClick={restartGame}
-                    style={{
-                      height: 46,
-                      borderRadius: 23,
-                      fontWeight: 700,
-                      border: "2px solid #FFD700",
-                      background: "white",
-                      color: "#8B4513",
-                      transition: "all 0.3s ease",
-                      padding: "0 30px",
-                      marginBottom: 5,
-                    }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.transform = "translateY(-2px)";
-                      e.currentTarget.style.boxShadow =
-                        "0 10px 20px rgba(255,215,0,0.3)";
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.transform = "translateY(0)";
-                      e.currentTarget.style.boxShadow = "none";
-                    }}
-                  >
-                    {t.playAgain}
-                  </Button>
-                )}
-
-                <Button
-                  onClick={() => {
-                    navigate("/");
-                  }}
+                <div
                   style={{
-                    height: 48,
-                    padding: "0 32px",
-                    borderRadius: 30,
-                    fontWeight: 700,
-                    fontSize: 16,
-                    background: "linear-gradient(135deg, #27AE60, #2ECC71)",
-                    border: "none",
-                    boxShadow: "0 10px 20px rgba(39,174,96,0.3)",
-                    transition: "all 0.3s ease",
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.transform = "translateY(-2px)";
-                    e.currentTarget.style.boxShadow =
-                      "0 10px 20px rgba(255,215,0,0.3)";
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.transform = "translateY(0)";
-                    e.currentTarget.style.boxShadow = "none";
+                    display: "flex",
+                    gap: 12,
+                    marginTop: 24,
+                    flexWrap: "wrap",
+                    justifyContent: "space-evenly",
                   }}
                 >
-                  {t.goHome}
-                </Button>
+                  <Button
+                    onClick={() => navigate("/")}
+                    style={{
+                      height: 48,
+                      padding: "0 32px",
+                      borderRadius: 30,
+                      fontWeight: 700,
+                      fontSize: 16,
+                      background: "linear-gradient(135deg, #1677ff, #4096ff)", // 🔵 BLUE
+                      border: "none",
+                      color: "white",
+                      boxShadow: "0 10px 20px rgba(22,119,255,0.3)",
+                    }}
+                  >
+                    {t.goHome}
+                  </Button>
+
+                  {score === 0 && (
+                    <Button
+                      onClick={restartGame}
+                      style={{
+                        height: 46,
+                        borderRadius: 23,
+                        fontWeight: 700,
+                        border: "2px solid #FFD700",
+                        background: "white",
+                        color: "#8B4513",
+                        transition: "all 0.3s ease",
+                        padding: "0 30px",
+                        marginBottom: 5,
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.transform = "translateY(-2px)";
+                        e.currentTarget.style.boxShadow =
+                          "0 10px 20px rgba(255,215,0,0.3)";
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.transform = "translateY(0)";
+                        e.currentTarget.style.boxShadow = "none";
+                      }}
+                    >
+                      {t.playAgain}
+                    </Button>
+                  )}
+
+                  {score !== 0 && (
+                    <Button
+                      onClick={() => handleNext()}
+                      style={{
+                        height: 48,
+                        padding: "0 32px",
+                        borderRadius: 30,
+                        fontWeight: 700,
+                        fontSize: 16,
+                        background: "linear-gradient(135deg, #27AE60, #2ECC71)",
+                        border: "none",
+                        color: "white",
+                        boxShadow: "0 10px 20px rgba(39,174,96,0.3)",
+                      }}
+                    >
+                      Next Question
+                    </Button>
+                  )}
+                </div>
               </motion.div>
             )}
           </AnimatePresence>

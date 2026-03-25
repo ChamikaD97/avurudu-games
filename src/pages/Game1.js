@@ -12,6 +12,7 @@ import WINWAYLogo from "../assets/WIN WAY English Logo- PNG.png";
 import { submitQuizGame } from "../api/gameApi";
 import { useLanguage } from "../context/LanguageContext";
 import AwuruduGames from "../assets/Aluth Awurudu Games.png";
+import { getNextGameRoute } from "../utils/gameFlow.js"; // or same file
 
 export default function Game1({ player }) {
   const navigate = useNavigate();
@@ -147,7 +148,14 @@ export default function Game1({ player }) {
     window.addEventListener("mousemove", handleMouseMove);
     return () => window.removeEventListener("mousemove", handleMouseMove);
   }, []);
-
+  const games = [
+    { key: "game_quiz_done", route: "/game1" },
+    { key: "game_kavum_done", route: "/game2" },
+    { key: "game_lamps_done", route: "/game3" },
+    { key: "game_rabana_done", route: "/rabana" },
+    { key: "game_catch_kavum_done", route: "/kavum" },
+    { key: "game_break_pot_done", route: "/break" },
+  ];
   useEffect(() => {
     const styleId = "game1-festival-animations";
     if (document.getElementById(styleId)) return;
@@ -271,23 +279,68 @@ export default function Game1({ player }) {
 
     try {
       const res = await submitQuizGame(payload);
-      if (res) {
-        localStorage.setItem("game_quiz_done", "true");
+
+      if (res?.success) {
+        // ✅ Get existing progress
+        const existing = JSON.parse(
+          localStorage.getItem("gamesPlayed") || "{}",
+        );
+
+        // ✅ Update Quiz
+        existing["quiz"] = {
+          completed: true,
+          score,
+          time: totalTime,
+          totalQuestions: questions.length,
+          completedAt: new Date().toISOString(),
+        };
+
+        // ✅ Save back
+        localStorage.setItem("gamesPlayed", JSON.stringify(existing));
       }
+
       console.log("Saved");
     } catch (err) {
       console.log("Save failed");
     }
   };
+  const handleNext = () => {
+    const progress = JSON.parse(localStorage.getItem("gamesPlayed") || "{}");
 
-  const restartGame = () => {
-    setCurrent(0);
-    setSelected(null);
-    setAnswers([]);
-    setFinished(false);
-    setFinalScore(0);
-    setTimeTaken("0.00");
-    setStartTime(Date.now());
+    const keyMap = {
+      game_quiz_done: "quiz",
+      game_kavum_done: "kavum_count",
+      game_lamps_done: "hidden_lamps",
+      game_rabana_done: "rabana",
+      game_catch_kavum_done: "catch_kavum",
+      game_break_pot_done: "break_pot",
+    };
+
+    const gamesFlow = [
+      { key: "game_quiz_done", route: "/game1" },
+      { key: "game_kavum_done", route: "/game2" },
+      { key: "game_lamps_done", route: "/game3" },
+      { key: "game_rabana_done", route: "/rabana" },
+      { key: "game_catch_kavum_done", route: "/kavum" },
+      { key: "game_break_pot_done", route: "/break" },
+    ];
+
+    for (let game of gamesFlow) {
+      const cleanKey = keyMap[game.key];
+      const isDone = progress?.[cleanKey]?.completed;
+
+      if (!isDone) {
+        navigate(game.route); // ✅ go next game
+        return;
+      }
+    }
+
+    // ✅ all completed
+    console.log(progress);
+
+    // ✅ all completed
+       navigate("/"); // or show bonus modal
+
   };
 
   const handleBack = () => {
@@ -802,19 +855,15 @@ export default function Game1({ player }) {
                       ))}
                     </div>
                   </div>
-
                   <div
                     style={{
                       display: "flex",
                       gap: 12,
                       marginTop: 24,
                       flexWrap: "wrap",
-                      justifyContent: "center",
+                      justifyContent: "space-between",
                     }}
                   >
-       
-       
-
                     <Button
                       onClick={() => navigate("/")}
                       style={{
@@ -823,13 +872,30 @@ export default function Game1({ player }) {
                         borderRadius: 30,
                         fontWeight: 700,
                         fontSize: 16,
-                        background: "linear-gradient(135deg, #27AE60, #2ECC71)",
+                        background: "linear-gradient(135deg, #1677ff, #4096ff)", // 🔵 BLUE
+                        border: "none",
+                        color: "white",
+                        boxShadow: "0 10px 20px rgba(22,119,255,0.3)",
+                      }}
+                    >
+                      {t.goHome}
+                    </Button>
+
+                    <Button
+                      onClick={() => handleNext()}
+                      style={{
+                        height: 48,
+                        padding: "0 32px",
+                        borderRadius: 30,
+                        fontWeight: 700,
+                        fontSize: 16,
+                        background: "linear-gradient(135deg, #27AE60, #2ECC71)", // 🟢 GREEN (primary)
                         border: "none",
                         color: "white",
                         boxShadow: "0 10px 20px rgba(39,174,96,0.3)",
                       }}
                     >
-                      {t.goHome}
+                      Next Question
                     </Button>
                   </div>
                 </div>

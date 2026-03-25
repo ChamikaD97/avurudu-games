@@ -19,8 +19,10 @@ import {
   FireOutlined,
   StarOutlined,
 } from "@ant-design/icons";
+import { getSpinResultsFiltered, saveGameSummary } from "../api/gameApi";
+import { motion } from "framer-motion";
 
-export default function GamesHome() {
+export default function GamesHome({ player }) {
   const navigate = useNavigate();
   const [showBonus, setShowBonus] = useState(false);
   const [activeGame, setActiveGame] = useState(null);
@@ -31,6 +33,64 @@ export default function GamesHome() {
   const [isMobile, setIsMobile] = useState(false);
   const containerRef = useRef(null);
   const { language } = useLanguage();
+  const [alreadyPlayed, setAlreadyPlayed] = useState(false);
+  const progress = JSON.parse(localStorage.getItem("gamesPlayed") || "{}");
+
+  const games = [
+    { key: "quiz", name: "Quiz Game" },
+    { key: "kavum_count", name: "Kavum Count" },
+    { key: "hidden_lamps", name: "Hidden Lamps" },
+    { key: "rabana", name: "Rabana" },
+    { key: "catch_kavum", name: "Catch Kavum" },
+    { key: "break_pot", name: "Break Pot" },
+  ];
+
+  useEffect(() => {
+    // ✅ get unified storage
+    const progress = JSON.parse(localStorage.getItem("gamesPlayed") || "{}");
+
+    const status = {};
+
+    data.forEach((game) => {
+      status[game.key] = progress?.[game.key]?.completed || false;
+    });
+
+    setCompletedGames(status);
+
+    const savedActive = localStorage.getItem("activeGame");
+    if (savedActive) setActiveGame(savedActive);
+  }, [language]);
+
+  const sendSummary = async () => {
+    const progress = JSON.parse(localStorage.getItem("gamesPlayed") || "{}");
+    const player = JSON.parse(localStorage.getItem("player") || "{}");
+
+    const res = await saveGameSummary({
+      name: player.name,
+      phone: player.phone,
+      games: progress,
+    });
+
+    if (res.success) {
+      console.log("Saved to Google Sheet ✅");
+    } else {
+      console.log("Failed ❌");
+    }
+  };
+
+  const getSummery = async () => {
+    const data = await getSpinResultsFiltered({
+      phone: player.phone,
+    });
+
+    console.log(data);
+
+    if (data && data.length > 0) {
+      setAlreadyPlayed(true); // ✅ user already played
+    } else {
+      setAlreadyPlayed(false); // ✅ user not played
+    }
+  };
 
   const uiText = {
     si: {
@@ -61,13 +121,14 @@ export default function GamesHome() {
       sessionDescMobile: "සියලු ප්‍රගතිය ඉවත් කර නැවත ආරම්භ කරන්න",
       sessionDescDesktop: "සියලු ක්‍රීඩා ප්‍රගතිය ඉවත් කර නැවත ආරම්භ කරන්න",
       endSessionMobile: "End Session",
-      endSessionDesktop: "End Session / Exit",sessionMobile: "මෙම සැසිය අවසන් කරන්න",
-sessionDesktop: "මෙම ක්‍රීඩා සැසිය අවසන් කරන්න",
-sessionDescMobile: "ඔබගේ වත්මන් ක්‍රීඩා සැසිය මෙතැනින් අවසන් කළ හැක.",
-sessionDescDesktop:
-  "ඔබගේ වත්මන් ක්‍රීඩා සැසිය අවසන් කර නැවත ආරම්භ කිරීමට මෙතැනින් හැක.",
-endSessionMobile: "සැසිය අවසන් කරන්න",
-endSessionDesktop: "ක්‍රීඩා සැසිය අවසන් කරන්න",
+      endSessionDesktop: "End Session / Exit",
+      sessionMobile: "මෙම සැසිය අවසන් කරන්න",
+      sessionDesktop: "මෙම ක්‍රීඩා සැසිය අවසන් කරන්න",
+      sessionDescMobile: "ඔබගේ වත්මන් ක්‍රීඩා සැසිය මෙතැනින් අවසන් කළ හැක.",
+      sessionDescDesktop:
+        "ඔබගේ වත්මන් ක්‍රීඩා සැසිය අවසන් කර නැවත ආරම්භ කිරීමට මෙතැනින් හැක.",
+      endSessionMobile: "සැසිය අවසන් කරන්න",
+      endSessionDesktop: "ක්‍රීඩා සැසිය අවසන් කරන්න",
       rewards: [
         "",
         "🔢 ගණිත ශූරතාව",
@@ -108,13 +169,14 @@ endSessionDesktop: "ක්‍රීඩා සැසිය අවසන් කර
       sessionDescDesktop:
         "அனைத்து விளையாட்டு முன்னேற்றத்தையும் நீக்கி மீண்டும் தொடங்கவும்",
       endSessionMobile: "அமர்வை முடிக்க",
-      endSessionDesktop: "அமர்வை முடிக்க / வெளியேறு",sessionMobile: "இந்த அமர்வை முடிக்கவும்",
-sessionDesktop: "இந்த விளையாட்டு அமர்வை முடிக்கவும்",
-sessionDescMobile: "உங்கள் தற்போதைய விளையாட்டு அமர்வை இங்கே முடிக்கலாம்.",
-sessionDescDesktop:
-  "உங்கள் தற்போதைய விளையாட்டு அமர்வை முடித்து மீண்டும் தொடங்க இங்கே முடியும்.",
-endSessionMobile: "அமர்வை முடிக்கவும்",
-endSessionDesktop: "விளையாட்டு அமர்வை முடிக்கவும்",
+      endSessionDesktop: "அமர்வை முடிக்க / வெளியேறு",
+      sessionMobile: "இந்த அமர்வை முடிக்கவும்",
+      sessionDesktop: "இந்த விளையாட்டு அமர்வை முடிக்கவும்",
+      sessionDescMobile: "உங்கள் தற்போதைய விளையாட்டு அமர்வை இங்கே முடிக்கலாம்.",
+      sessionDescDesktop:
+        "உங்கள் தற்போதைய விளையாட்டு அமர்வை முடித்து மீண்டும் தொடங்க இங்கே முடியும்.",
+      endSessionMobile: "அமர்வை முடிக்கவும்",
+      endSessionDesktop: "விளையாட்டு அமர்வை முடிக்கவும்",
       rewards: [
         "",
         "🔢 கணித சாம்பியன்",
@@ -193,7 +255,14 @@ endSessionDesktop: "விளையாட்டு அமர்வை முட�
     window.addEventListener("resize", checkMobile);
     return () => window.removeEventListener("resize", checkMobile);
   }, []);
-
+  const keyMap = {
+    game_quiz_done: "quiz",
+    game_kavum_done: "kavum_count",
+    game_lamps_done: "hidden_lamps",
+    game_rabana_done: "rabana",
+    game_catch_kavum_done: "catch_kavum",
+    game_break_pot_done: "break_pot",
+  };
   const data = [
     {
       option: currentGameTexts[0].option,
@@ -274,11 +343,42 @@ endSessionDesktop: "விளையாட்டு அமர்வை முட�
     window.addEventListener("mousemove", handleMouseMove);
     return () => window.removeEventListener("mousemove", handleMouseMove);
   }, [isMobile]);
+  const getProgress = () => {
+    try {
+      const raw = localStorage.getItem("gamesPlayed");
 
+      if (!raw) return {};
+
+      // 🔥 if already object (corrupted case)
+      if (raw === "[object Object]") {
+        localStorage.removeItem("gamesPlayed");
+        return {};
+      }
+
+      return JSON.parse(raw);
+    } catch (err) {
+      console.error("Invalid gamesPlayed, resetting...");
+      localStorage.removeItem("gamesPlayed");
+      return {};
+    }
+  };
   const allGamesDone = useMemo(() => {
-    return data.every((game) => completedGames[game.key]);
-  }, [completedGames, data]);
+    const progress = getProgress();
 
+    const keyMap = {
+      game_quiz_done: "quiz",
+      game_kavum_done: "kavum_count",
+      game_lamps_done: "hidden_lamps",
+      game_rabana_done: "rabana",
+      game_catch_kavum_done: "catch_kavum",
+      game_break_pot_done: "break_pot",
+    };
+
+    return data.every((game) => {
+      const cleanKey = keyMap[game.key] || game.key;
+      return progress?.[cleanKey]?.completed;
+    });
+  }, [data]);
   // Trigger fireworks when all games completed
   useEffect(() => {
     if (allGamesDone) {
@@ -286,6 +386,12 @@ endSessionDesktop: "விளையாட்டு அமர்வை முட�
       const timer = setTimeout(() => setShowFireworks(false), 5000);
       return () => clearTimeout(timer);
     }
+  }, [allGamesDone]);
+  useEffect(() => {
+    if (allGamesDone) {
+      sendSummary();
+    }
+    getSummery();
   }, [allGamesDone]);
 
   // Inject enhanced animations (keeping your existing animations)
@@ -476,18 +582,6 @@ endSessionDesktop: "விளையாட்டு அமர்வை முட�
     document.head.appendChild(style);
   }, []);
 
-  // Load states
-  useEffect(() => {
-    const status = {};
-    data.forEach((game) => {
-      status[game.key] = localStorage.getItem(game.key) === "true";
-    });
-    setCompletedGames(status);
-
-    const savedActive = localStorage.getItem("activeGame");
-    if (savedActive) setActiveGame(savedActive);
-  }, [language]);
-
   useEffect(() => {
     if (activeGame) {
       localStorage.setItem("activeGame", activeGame);
@@ -503,7 +597,7 @@ endSessionDesktop: "விளையாட்டு அமர்வை முட�
     data.forEach((game) => localStorage.removeItem(game.key));
     localStorage.removeItem("player");
     localStorage.removeItem("bonus_reward");
-
+    localStorage.removeItem("gamesPlayed");
     setActiveGame(null);
     setCompletedGames({});
     setShowBonus(false);
@@ -547,36 +641,55 @@ endSessionDesktop: "விளையாட்டு அமர்வை முட�
   };
 
   return (
-    <div
-      style={{
-        minHeight: "100vh",
-        background:
-          "radial-gradient(circle at 30% 30%, #FFE4B5, #DEB887, #8B4513)",
-        padding: isMobile ? "0 10px" : 0,
-        position: "relative",
-        overflow: "hidden",
-      }}
-    >
+    <>
       <div
-        className="games-card-animate"
         style={{
-          overflow: "hidden",
+          minHeight: "100vh",
+          background:
+            "radial-gradient(circle at 30% 30%, #FFE4B5, #DEB887, #8B4513)",
+          padding: isMobile ? "0 10px" : 0,
           position: "relative",
-          boxShadow: "0 20px 40px rgba(0,0,0,0.25)",
+          overflow: "hidden",
         }}
       >
-        <video
-          src={isMobile ? bannerVideoMobile : bannerVideoWeb}
-          autoPlay
-          loop
-          muted
-          playsInline
+        <div
+          className="games-card-animate"
           style={{
-            width: "100%",
-            height: "100%",
-            objectFit: "cover",
+            overflow: "hidden",
+            position: "relative",
+            boxShadow: "0 20px 40px rgba(0,0,0,0.25)",
           }}
-        />
+        >
+          <video
+            src={isMobile ? bannerVideoMobile : bannerVideoWeb}
+            autoPlay
+            loop
+            muted
+            playsInline
+            style={{
+              width: "100%",
+              height: "100%",
+              objectFit: "cover",
+            }}
+          />
+
+          <div
+            style={{
+              position: "absolute",
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              background:
+                "linear-gradient(180deg, rgba(0,0,0,0.2), rgba(0,0,0,0.5))",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              flexDirection: "column",
+              textAlign: "center",
+            }}
+          />
+        </div>
 
         <div
           style={{
@@ -585,25 +698,7 @@ endSessionDesktop: "விளையாட்டு அமர்வை முட�
             left: 0,
             right: 0,
             bottom: 0,
-            background:
-              "linear-gradient(180deg, rgba(0,0,0,0.2), rgba(0,0,0,0.5))",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            flexDirection: "column",
-            textAlign: "center",
-          }}
-        />
-      </div>
-
-      <div
-        style={{
-          position: "absolute",
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          background: `
+            background: `
             repeating-linear-gradient(
               45deg,
               rgba(255, 215, 0, 0.05) 0px,
@@ -612,607 +707,569 @@ endSessionDesktop: "விளையாட்டு அமர்வை முட�
               rgba(210, 105, 30, 0.05) 40px
             )
           `,
-          animation: isMobile ? "none" : "spinSlow 60s linear infinite",
-          pointerEvents: "none",
-        }}
-      />
+            animation: isMobile ? "none" : "spinSlow 60s linear infinite",
+            pointerEvents: "none",
+          }}
+        />
 
-      {showFireworks && (
-        <>
-          {[...Array(isMobile ? 8 : 15)].map((_, i) => (
-            <div
-              key={i}
-              className="firework"
-              style={{
-                left: `${10 + Math.random() * 80}%`,
-                top: `${10 + Math.random() * 80}%`,
-                animationDelay: `${Math.random() * 0.5}s`,
-                background: `radial-gradient(circle, ${["#ff0", "#f0f", "#0ff", "#ff9900"][Math.floor(Math.random() * 4)]} 0%, transparent 70%)`,
-              }}
-            />
-          ))}
-        </>
-      )}
+        {showFireworks && (
+          <>
+            {[...Array(isMobile ? 8 : 15)].map((_, i) => (
+              <div
+                key={i}
+                className="firework"
+                style={{
+                  left: `${10 + Math.random() * 80}%`,
+                  top: `${10 + Math.random() * 80}%`,
+                  animationDelay: `${Math.random() * 0.5}s`,
+                  background: `radial-gradient(circle, ${["#ff0", "#f0f", "#0ff", "#ff9900"][Math.floor(Math.random() * 4)]} 0%, transparent 70%)`,
+                }}
+              />
+            ))}
+          </>
+        )}
 
-      <div
-        style={{
-          maxWidth: isMobile ? "100%" : 1100,
-          margin: "0 auto",
-          position: "relative",
-          zIndex: 10,
-          marginTop: 50,
-          padding: isMobile ? "20px 0" : "0",
-        }}
-      >
-        <Row gutter={[isMobile ? 16 : 24, isMobile ? 16 : 24]} justify="center">
-          {data.map((game, index) => {
-            const isCompleted = completedGames[game.key];
-            const isLocked =
-              activeGame && activeGame !== game.route && !isCompleted;
+        <div
+          style={{
+            maxWidth: isMobile ? "100%" : 1100,
+            margin: "0 auto",
+            position: "relative",
+            zIndex: 10,
+            marginTop: 50,
+            padding: isMobile ? "20px 0" : "0",
+          }}
+        >
+          <Row
+            gutter={[isMobile ? 16 : 24, isMobile ? 16 : 24]}
+            justify="center"
+          >
+            {data.map((game, index) => {
+              const cleanKey = keyMap[game.key] || game.key;
+              const gameData = progress?.[cleanKey];
 
-            return (
-              <Col xs={24} sm={12} md={8} key={game.key}>
-                <div
-                  className="games-card-animate"
-                  style={{
-                    animationDelay: `${index * 0.12}s`,
-                  }}
-                >
-                  <Card
-                    hoverable={!isLocked}
-                    onClick={() => !isLocked && quickPlay(game)}
-                    className="games-home-card"
+              const isCompleted = gameData?.completed || false;
+
+              const isLocked =
+                activeGame && activeGame !== game.route && !isCompleted;
+
+              return (
+                <Col xs={24} sm={12} md={8} key={game.key}>
+                  <div
+                    className="games-card-animate"
                     style={{
-                      borderRadius: isMobile ? 20 : 24,
-                      overflow: "hidden",
-                      cursor: isLocked ? "not-allowed" : "pointer",
-                      border: "none",
-                      position: "relative",
-                      background: isCompleted
-                        ? "linear-gradient(135deg, #f6ffed, #d9f7be)"
-                        : "rgba(255, 255, 255, 0.95)",
-                      backdropFilter: "blur(10px)",
-                      opacity: isLocked ? 0.6 : 1,
-                      minHeight: isMobile ? 280 : 300,
-                      transform: isLocked ? "scale(0.98)" : "scale(1)",
-                      margin: isMobile ? "0" : "0",
-                      WebkitTapHighlightColor: "transparent",
-                    }}
-                    bodyStyle={{
-                      padding: isMobile ? 16 : 24,
-                      display: "flex",
-                      flexDirection: "column",
-                      justifyContent: "space-between",
-                      minHeight: isMobile ? 280 : 300,
+                      animationDelay: `${index * 0.12}s`,
                     }}
                   >
-                    {isCompleted && (
-                      <div
-                        style={{
-                          position: "absolute",
-                          top: isMobile ? 8 : 12,
-                          right: isMobile ? 8 : 12,
-                          background: "#52c41a",
-                          color: "white",
-                          padding: isMobile ? "2px 8px" : "4px 12px",
-                          borderRadius: 20,
-                          fontSize: isMobile ? 10 : 12,
-                          display: "flex",
-                          alignItems: "center",
-                          gap: isMobile ? 2 : 4,
-                          zIndex: 10,
-                          boxShadow: "0 4px 12px rgba(82,196,26,0.3)",
-                        }}
-                      >
-                        <CheckCircleOutlined
-                          style={{ fontSize: isMobile ? 10 : 12 }}
-                        />
-                        {currentUi.completed}
-                      </div>
-                    )}
-
-                    {isLocked && !isCompleted && (
-                      <div
-                        style={{
-                          position: "absolute",
-                          top: isMobile ? 8 : 12,
-                          right: isMobile ? 8 : 12,
-                          background: "rgba(0,0,0,0.6)",
-                          color: "white",
-                          width: isMobile ? 30 : 36,
-                          height: isMobile ? 30 : 36,
-                          borderRadius: "50%",
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                          zIndex: 10,
-                          backdropFilter: "blur(5px)",
-                        }}
-                      >
-                        <LockOutlined
-                          style={{ fontSize: isMobile ? 14 : 16 }}
-                        />
-                      </div>
-                    )}
-
-                    {activeGame === game.route && !isCompleted && (
-                      <div
-                        style={{
-                          position: "absolute",
-                          top: isMobile ? 8 : 12,
-                          left: isMobile ? 8 : 12,
-                          background: "#FFD700",
-                          color: "#8B4513",
-                          padding: isMobile ? "2px 8px" : "4px 12px",
-                          borderRadius: 20,
-                          fontSize: isMobile ? 10 : 12,
-                          fontWeight: "bold",
-                          display: "flex",
-                          alignItems: "center",
-                          gap: isMobile ? 2 : 4,
-                          zIndex: 10,
-                          boxShadow: "0 4px 12px rgba(255,215,0,0.3)",
-                          maxWidth: isMobile ? "70%" : "auto",
-                        }}
-                      >
-                        <FireOutlined
-                          style={{ fontSize: isMobile ? 10 : 12 }}
-                        />
-                        {isMobile ? currentUi.playing : currentUi.playNowBadge}
-                      </div>
-                    )}
-
-                    <div style={{ textAlign: "center" }}>
-                      <div
-                        style={{
-                          width: isMobile ? 60 : 80,
-                          height: isMobile ? 60 : 80,
-                          borderRadius: "50%",
-                          margin: isMobile ? "0 auto 12px" : "0 auto 16px",
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                          fontSize: isMobile ? 30 : 40,
-                          background: game.gradient,
-                          boxShadow: `0 15px 25px ${game.color}40`,
-                          animation: "gentleFloat 3s ease-in-out infinite",
-                        }}
-                      >
-                        {game.icon}
-                      </div>
-
-                      <h3
-                        style={{
-                          fontSize: isMobile ? 16 : 18,
-                          fontWeight: 800,
-                          marginBottom: isMobile ? 8 : 10,
-                          color: "#5c3b14",
-                          minHeight: isMobile ? 44 : 52,
-                          lineHeight: 1.3,
-                          padding: isMobile ? "0 4px" : 0,
-                        }}
-                      >
-                        {game.option}
-                      </h3>
-
-                      <p
-                        style={{
-                          color: "#000000",
-                          fontSize: isMobile ? 15 : 14,
-                          padding: isMobile ? "0 4px" : 0,
-                        }}
-                      >
-                        {game.description}
-                      </p>
-                    </div>
-
-                    <Button
-                      disabled={isLocked || isCompleted}
-                      block
+                    <Card
+                      hoverable={!isLocked}
+                      onClick={() => !isLocked && quickPlay(game)}
+                      className="games-home-card"
                       style={{
-                        borderRadius: 30,
-                        height: isMobile ? 40 : 44,
-                        fontSize: isMobile ? 15 : 14,
-                        background:
-                          isCompleted || isLocked ? "#d9d9d9" : game.gradient,
-                        color: isCompleted || isLocked ? "#000000" : "#ffffff",
+                        borderRadius: isMobile ? 20 : 24,
+                        overflow: "hidden",
+                        cursor: isLocked ? "not-allowed" : "pointer",
                         border: "none",
-                        boxShadow: `0 8px 16px ${game.color}60`,
-                        transition: "all 0.3s ease",
-                        touchAction: "manipulation",
+                        position: "relative",
+                        background: isCompleted
+                          ? "linear-gradient(135deg, #f6ffed, #d9f7be)"
+                          : "rgba(255, 255, 255, 0.95)",
+                        backdropFilter: "blur(10px)",
+                        opacity: isLocked ? 0.6 : 1,
+                        minHeight: isMobile ? 280 : 300,
+                        transform: isLocked ? "scale(0.98)" : "scale(1)",
+                        margin: isMobile ? "0" : "0",
+                        WebkitTapHighlightColor: "transparent",
                       }}
-                      onTouchStart={(e) => {
-                        if (!isLocked && !isCompleted && isMobile) {
-                          e.currentTarget.style.transform = "scale(0.95)";
-                        }
-                      }}
-                      onTouchEnd={(e) => {
-                        if (!isLocked && !isCompleted && isMobile) {
-                          e.currentTarget.style.transform = "scale(1)";
-                        }
-                      }}
-                      onMouseEnter={(e) => {
-                        if (!isLocked && !isCompleted && !isMobile) {
-                          e.currentTarget.style.transform =
-                            "translateY(-2px) scale(1.02)";
-                          e.currentTarget.style.boxShadow = `0 12px 24px ${game.color}80`;
-                        }
-                      }}
-                      onMouseLeave={(e) => {
-                        if (!isLocked && !isCompleted && !isMobile) {
-                          e.currentTarget.style.transform =
-                            "translateY(0) scale(1)";
-                          e.currentTarget.style.boxShadow = `0 8px 16px ${game.color}60`;
-                        }
+                      bodyStyle={{
+                        padding: isMobile ? 16 : 24,
+                        display: "flex",
+                        flexDirection: "column",
+                        justifyContent: "space-between",
+                        minHeight: isMobile ? 280 : 300,
                       }}
                     >
-                      {isCompleted
-                        ? isMobile
-                          ? currentUi.completedMobile
-                          : currentUi.completedDesktop
-                        : isLocked
+                      {isCompleted && (
+                        <div
+                          style={{
+                            position: "absolute",
+                            top: isMobile ? 8 : 12,
+                            right: isMobile ? 8 : 12,
+                            background: "#52c41a",
+                            color: "white",
+                            padding: isMobile ? "2px 8px" : "4px 12px",
+                            borderRadius: 20,
+                            fontSize: isMobile ? 10 : 12,
+                            display: "flex",
+                            alignItems: "center",
+                            gap: isMobile ? 2 : 4,
+                            zIndex: 10,
+                            boxShadow: "0 4px 12px rgba(82,196,26,0.3)",
+                          }}
+                        >
+                          <CheckCircleOutlined
+                            style={{ fontSize: isMobile ? 10 : 12 }}
+                          />
+                          {currentUi.completed}
+                        </div>
+                      )}
+
+                      {isLocked && !isCompleted && (
+                        <div
+                          style={{
+                            position: "absolute",
+                            top: isMobile ? 8 : 12,
+                            right: isMobile ? 8 : 12,
+                            background: "rgba(0,0,0,0.6)",
+                            color: "white",
+                            width: isMobile ? 30 : 36,
+                            height: isMobile ? 30 : 36,
+                            borderRadius: "50%",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            zIndex: 10,
+                            backdropFilter: "blur(5px)",
+                          }}
+                        >
+                          <LockOutlined
+                            style={{ fontSize: isMobile ? 14 : 16 }}
+                          />
+                        </div>
+                      )}
+
+                      {activeGame === game.route && !isCompleted && (
+                        <div
+                          style={{
+                            position: "absolute",
+                            top: isMobile ? 8 : 12,
+                            left: isMobile ? 8 : 12,
+                            background: "#FFD700",
+                            color: "#8B4513",
+                            padding: isMobile ? "2px 8px" : "4px 12px",
+                            borderRadius: 20,
+                            fontSize: isMobile ? 10 : 12,
+                            fontWeight: "bold",
+                            display: "flex",
+                            alignItems: "center",
+                            gap: isMobile ? 2 : 4,
+                            zIndex: 10,
+                            boxShadow: "0 4px 12px rgba(255,215,0,0.3)",
+                            maxWidth: isMobile ? "70%" : "auto",
+                          }}
+                        >
+                          <FireOutlined
+                            style={{ fontSize: isMobile ? 10 : 12 }}
+                          />
+                          {isMobile
+                            ? currentUi.playing
+                            : currentUi.playNowBadge}
+                        </div>
+                      )}
+
+                      <div style={{ textAlign: "center" }}>
+                        <div
+                          style={{
+                            width: isMobile ? 60 : 80,
+                            height: isMobile ? 60 : 80,
+                            borderRadius: "50%",
+                            margin: isMobile ? "0 auto 12px" : "0 auto 16px",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            fontSize: isMobile ? 30 : 40,
+                            background: game.gradient,
+                            boxShadow: `0 15px 25px ${game.color}40`,
+                            animation: "gentleFloat 3s ease-in-out infinite",
+                          }}
+                        >
+                          {game.icon}
+                        </div>
+
+                        <h3
+                          style={{
+                            fontSize: isMobile ? 16 : 18,
+                            fontWeight: 800,
+                            marginBottom: isMobile ? 8 : 10,
+                            color: "#5c3b14",
+                            minHeight: isMobile ? 44 : 52,
+                            lineHeight: 1.3,
+                            padding: isMobile ? "0 4px" : 0,
+                          }}
+                        >
+                          {game.option}
+                        </h3>
+
+                        <p
+                          style={{
+                            color: "#000000",
+                            fontSize: isMobile ? 15 : 14,
+                            padding: isMobile ? "0 4px" : 0,
+                          }}
+                        >
+                          {game.description}
+                        </p>
+                      </div>
+
+                      <Button
+                        disabled={isLocked || isCompleted}
+                        block
+                        style={{
+                          borderRadius: 30,
+                          height: isMobile ? 40 : 44,
+                          fontSize: isMobile ? 15 : 14,
+                          background:
+                            isCompleted || isLocked ? "#d9d9d9" : game.gradient,
+                          color:
+                            isCompleted || isLocked ? "#000000" : "#ffffff",
+                          border: "none",
+                          boxShadow: `0 8px 16px ${game.color}60`,
+                          transition: "all 0.3s ease",
+                          touchAction: "manipulation",
+                        }}
+                        onTouchStart={(e) => {
+                          if (!isLocked && !isCompleted && isMobile) {
+                            e.currentTarget.style.transform = "scale(0.95)";
+                          }
+                        }}
+                        onTouchEnd={(e) => {
+                          if (!isLocked && !isCompleted && isMobile) {
+                            e.currentTarget.style.transform = "scale(1)";
+                          }
+                        }}
+                        onMouseEnter={(e) => {
+                          if (!isLocked && !isCompleted && !isMobile) {
+                            e.currentTarget.style.transform =
+                              "translateY(-2px) scale(1.02)";
+                            e.currentTarget.style.boxShadow = `0 12px 24px ${game.color}80`;
+                          }
+                        }}
+                        onMouseLeave={(e) => {
+                          if (!isLocked && !isCompleted && !isMobile) {
+                            e.currentTarget.style.transform =
+                              "translateY(0) scale(1)";
+                            e.currentTarget.style.boxShadow = `0 8px 16px ${game.color}60`;
+                          }
+                        }}
+                      >
+                        {isCompleted
                           ? isMobile
-                            ? currentUi.lockedMobile
-                            : currentUi.lockedDesktop
-                          : isMobile
-                            ? currentUi.playButtonMobile
-                            : currentUi.playButtonDesktop}
-                    </Button>
-                  </Card>
+                            ? currentUi.completedMobile
+                            : currentUi.completedDesktop
+                          : isLocked
+                            ? isMobile
+                              ? currentUi.lockedMobile
+                              : currentUi.lockedDesktop
+                            : isMobile
+                              ? currentUi.playButtonMobile
+                              : currentUi.playButtonDesktop}
+                      </Button>
+                    </Card>
+                  </div>
+                </Col>
+              );
+            })}
+          </Row>
+
+          <img
+            src={Dana}
+            alt="Ada"
+            className="card-lottery-deco"
+            style={{
+              top: 50,
+              left: 30,
+              width: 52,
+              transform: "rotate(-12deg)",
+              ["--duration"]: "7s",
+            }}
+          />
+
+          <img
+            src={Mega}
+            alt="Mega"
+            className="card-lottery-deco"
+            style={{
+              top: 1250,
+              left: 20,
+              width: 70,
+              transform: "rotate(-12deg)",
+              ["--duration"]: "7s",
+            }}
+          />
+
+          <img
+            src={Handa}
+            alt="Handa"
+            className="card-lottery-deco"
+            style={{
+              top: 1000,
+              right: 20,
+              width: 70,
+              transform: "rotate(10deg)",
+              ["--duration"]: "8s",
+            }}
+          />
+
+          <img
+            src={Govi}
+            alt="Govi"
+            className="card-lottery-deco"
+            style={{
+              top: 1550,
+              right: 20,
+              width: 70,
+              transform: "rotate(-8deg)",
+              ["--duration"]: "6.5s",
+            }}
+          />
+
+          <img
+            src={Maha}
+            alt="Maha"
+            className="card-lottery-deco"
+            style={{
+              top: 688,
+              left: 10,
+              width: 50,
+              transform: "rotate(8deg)",
+              ["--duration"]: "7.2s",
+            }}
+          />
+
+          <img
+            src={Jaya}
+            alt="Maha"
+            className="card-lottery-deco"
+            style={{
+              top: 350,
+              right: 10,
+              width: 50,
+              transform: "rotate(8deg)",
+              ["--duration"]: "7.2s",
+            }}
+          />
+
+          {alreadyPlayed && allGamesDone && (
+            <div
+              className="games-card-animate"
+              style={{
+                textAlign: "center",
+                marginTop: isMobile ? 30 : 40,
+                padding: isMobile ? "0 10px" : 0,
+                animationDelay: `${(data.length + 0.5) * 0.12}s`,
+              }}
+            >
+              <Card
+                className="games-home-card"
+                style={{
+                  maxWidth: isMobile ? "100%" : 500,
+                  margin: "0 auto",
+                  borderRadius: isMobile ? 20 : 30,
+                  border: "2px solid rgba(255, 215, 0, 0.3)",
+                  background: "linear-gradient(135deg, #FFF9E6, #FFE4B5)",
+                  boxShadow: "0 25px 45px rgba(255,215,0,0.25)",
+                  position: "relative",
+                  overflow: "hidden",
+                }}
+                bodyStyle={{ padding: isMobile ? 20 : 32 }}
+              >
+                {/* ✨ DECORATION */}
+                <div
+                  style={{
+                    position: "absolute",
+                    top: -50,
+                    left: -50,
+                    width: 100,
+                    height: 100,
+                    background:
+                      "radial-gradient(circle, rgba(255,215,0,0.3) 0%, transparent 70%)",
+                    borderRadius: "50%",
+                    animation: "spinSlow 10s linear infinite",
+                  }}
+                />
+
+                <div style={{ position: "relative", zIndex: 2 }}>
+                  {/* ICON */}
+                  <div
+                    style={{
+                      fontSize: isMobile ? 48 : 64,
+                      marginBottom: 12,
+                      animation: "gentleFloat 2s ease-in-out infinite",
+                    }}
+                  >
+                    🎡
+                  </div>
+
+                  {/* TITLE */}
+                  <h2
+                    style={{
+                      color: "#8B4513",
+                      fontSize: isMobile ? 24 : 32,
+                      fontWeight: 800,
+                      marginBottom: 10,
+                    }}
+                  >
+                    Spin Completed!
+                  </h2>
+
+                  {/* MESSAGE */}
+                  <p
+                    style={{
+                      color: "#D2691E",
+                      fontSize: isMobile ? 14 : 16,
+                      marginBottom: 20,
+                    }}
+                  >
+                    🎉 You’ve already used your lucky spin today.
+                    <br />
+                    Come back tomorrow for another chance 🎁
+                  </p>
+
+                  {/* BADGES (REUSING YOUR STYLE) */}
+                  <div
+                    style={{
+                      display: "flex",
+                      justifyContent: "center",
+                      gap: 12,
+                      flexWrap: "wrap",
+                      marginBottom: 20,
+                    }}
+                  >
+                    <div style={styles.rewardBadge}>
+                      <span style={{ marginRight: 6 }}>🎯</span>
+                      Spin Used
+                    </div>
+
+                    <div style={styles.rewardBadge}>
+                      <span style={{ marginRight: 6 }}>⏳</span>
+                      Next Tomorrow
+                    </div>
+                  </div>
+
+                  {/* STATUS BUTTON STYLE */}
+                  <Button
+                    disabled
+                    style={{
+                      borderRadius: 40,
+                      height: isMobile ? 48 : 54,
+                      padding: isMobile ? "0 24px" : "0 40px",
+                      fontSize: isMobile ? 16 : 18,
+                      fontWeight: "bold",
+                      background: "#d9d9d9",
+                      color: "#8c8c8c",
+                      border: "none",
+                      width: isMobile ? "100%" : "auto",
+                      cursor: "not-allowed",
+                    }}
+                  >
+                    🚫 Already Played
+                  </Button>
                 </div>
-              </Col>
-            );
-          })}
-        </Row>
-
-        <img
-          src={Dana}
-          alt="Ada"
-          className="card-lottery-deco"
-          style={{
-            top: 50,
-            left: 30,
-            width: 52,
-            transform: "rotate(-12deg)",
-            ["--duration"]: "7s",
-          }}
-        />
-
-        <img
-          src={Mega}
-          alt="Mega"
-          className="card-lottery-deco"
-          style={{
-            top: 1250,
-            left: 20,
-            width: 70,
-            transform: "rotate(-12deg)",
-            ["--duration"]: "7s",
-          }}
-        />
-
-        <img
-          src={Handa}
-          alt="Handa"
-          className="card-lottery-deco"
-          style={{
-            top: 1000,
-            right: 20,
-            width: 70,
-            transform: "rotate(10deg)",
-            ["--duration"]: "8s",
-          }}
-        />
-
-        <img
-          src={Govi}
-          alt="Govi"
-          className="card-lottery-deco"
-          style={{
-            top: 1550,
-            right: 20,
-            width: 70,
-            transform: "rotate(-8deg)",
-            ["--duration"]: "6.5s",
-          }}
-        />
-
-        <img
-          src={Maha}
-          alt="Maha"
-          className="card-lottery-deco"
-          style={{
-            top: 688,
-            left: 10,
-            width: 50,
-            transform: "rotate(8deg)",
-            ["--duration"]: "7.2s",
-          }}
-        />
-
-        <img
-          src={Jaya}
-          alt="Maha"
-          className="card-lottery-deco"
-          style={{
-            top: 350,
-            right: 10,
-            width: 50,
-            transform: "rotate(8deg)",
-            ["--duration"]: "7.2s",
-          }}
-        />
-
-        {allGamesDone && (
+              </Card>
+            </div>
+          )}
           <div
             className="games-card-animate"
             style={{
               textAlign: "center",
               marginTop: isMobile ? 30 : 40,
-              animationDelay: `${data.length * 0.12 + 0.2}s`,
+              marginBottom: isMobile ? 20 : 40,
+              animationDelay: `${(data.length + 1) * 0.12 + 0.3}s`,
               padding: isMobile ? "0 10px" : 0,
             }}
           >
             <Card
-              className="games-glow-icon"
               style={{
-                maxWidth: isMobile ? "100%" : 500,
+                maxWidth: isMobile ? "100%" : 450,
                 margin: "0 auto",
                 borderRadius: isMobile ? 20 : 30,
-                border: "3px solid gold",
-                background: "linear-gradient(135deg, #FFF9E6, #FFE4B5)",
-                boxShadow: "0 25px 45px rgba(255,215,0,0.3)",
-                overflow: "hidden",
-                position: "relative",
+                border: "2px dashed #ff4d4f",
+                background: "linear-gradient(135deg, #FFF1F0, #FFE6E6)",
+                boxShadow: "0 20px 40px rgba(255,77,79,0.2)",
+                backdropFilter: "blur(5px)",
               }}
-              bodyStyle={{ padding: isMobile ? 20 : 32 }}
+              bodyStyle={{ padding: isMobile ? 20 : 24 }}
             >
-              <div
+              <h3
                 style={{
-                  position: "absolute",
-                  top: -50,
-                  left: -50,
-                  width: isMobile ? 80 : 100,
-                  height: isMobile ? 80 : 100,
-                  background:
-                    "radial-gradient(circle, rgba(255,215,0,0.3) 0%, transparent 70%)",
-                  borderRadius: "50%",
-                  animation: "spinSlow 10s linear infinite",
+                  color: "#a8071a",
+                  fontSize: isMobile ? 20 : 22,
+                  fontWeight: 800,
+                  marginBottom: isMobile ? 8 : 12,
                 }}
-              />
+              >
+                🛑{" "}
+                {isMobile ? currentUi.sessionMobile : currentUi.sessionDesktop}
+              </h3>
 
-              <div style={{ position: "relative", zIndex: 2 }}>
-                <div
-                  style={{
-                    fontSize: isMobile ? 48 : 64,
-                    marginBottom: isMobile ? 12 : 16,
-                    animation: "gentleFloat 2s ease-in-out infinite",
-                  }}
-                >
-                  🎁
-                </div>
+              <p
+                style={{
+                  color: "#555",
+                  marginBottom: isMobile ? 16 : 20,
+                  fontSize: isMobile ? 14 : 16,
+                }}
+              >
+                {isMobile
+                  ? currentUi.sessionDescMobile
+                  : currentUi.sessionDescDesktop}
+              </p>
 
-                <h2
-                  style={{
-                    color: "#8B4513",
-                    fontSize: isMobile ? 24 : 32,
-                    fontWeight: 800,
-                    marginBottom: isMobile ? 8 : 12,
-                  }}
-                >
-                  {isMobile
-                    ? currentUi.bonusTitleMobile
-                    : currentUi.bonusTitleDesktop}
-                </h2>
-
-                <p
-                  style={{
-                    color: "#D2691E",
-                    fontSize: isMobile ? 14 : 16,
-                    marginBottom: isMobile ? 16 : 20,
-                  }}
-                >
-                  {isMobile
-                    ? currentUi.bonusDescMobile
-                    : currentUi.bonusDescDesktop}
-                </p>
-
-                <div
-                  style={{
-                    display: "flex",
-                    justifyContent: "center",
-                    gap: isMobile ? 8 : 16,
-                    marginBottom: isMobile ? 20 : 24,
-                    flexWrap: "wrap",
-                    flexDirection: isMobile ? "column" : "row",
-                    alignItems: "center",
-                  }}
-                >
-                  <div
-                    style={{
-                      ...styles.rewardBadge,
-                      ...(isMobile && {
-                        width: "100%",
-                        justifyContent: "center",
-                      }),
-                    }}
-                  >
-                    <span
-                      style={{ fontSize: isMobile ? 20 : 24, marginRight: 8 }}
-                    >
-                      🎡
-                    </span>
-                    {currentUi.luckyWheel}
-                  </div>
-
-                  <div
-                    style={{
-                      ...styles.rewardBadge,
-                      ...(isMobile && {
-                        width: "100%",
-                        justifyContent: "center",
-                      }),
-                    }}
-                  >
-                    <span
-                      style={{ fontSize: isMobile ? 20 : 24, marginRight: 8 }}
-                    >
-                      🏆
-                    </span>
-                    {currentUi.goldMedal}
-                  </div>
-                </div>
-
-                <Button
-                  type="primary"
-                  size={isMobile ? "middle" : "large"}
-                  onClick={() => setShowBonus(true)}
-                  style={{
-                    borderRadius: 40,
-                    height: isMobile ? 48 : 54,
-                    padding: isMobile ? "0 24px" : "0 40px",
-                    fontSize: isMobile ? 16 : 18,
-                    fontWeight: "bold",
-                    background: "linear-gradient(135deg, #faad14, #d48806)",
-                    border: "none",
-                    boxShadow: "0 15px 30px rgba(250,173,20,0.4)",
-                    transition: "all 0.3s ease",
-                    width: isMobile ? "100%" : "auto",
-                    touchAction: "manipulation",
-                  }}
-                  onTouchStart={(e) => {
-                    if (isMobile) {
-                      e.currentTarget.style.transform = "scale(0.95)";
-                    }
-                  }}
-                  onTouchEnd={(e) => {
-                    if (isMobile) {
-                      e.currentTarget.style.transform = "scale(1)";
-                    }
-                  }}
-                  onMouseEnter={(e) => {
-                    if (!isMobile) {
-                      e.currentTarget.style.transform =
-                        "translateY(-3px) scale(1.02)";
-                      e.currentTarget.style.boxShadow =
-                        "0 20px 40px rgba(250,173,20,0.5)";
-                    }
-                  }}
-                  onMouseLeave={(e) => {
-                    if (!isMobile) {
-                      e.currentTarget.style.transform =
-                        "translateY(0) scale(1)";
-                      e.currentTarget.style.boxShadow =
-                        "0 15px 30px rgba(250,173,20,0.4)";
-                    }
-                  }}
-                >
-                  <GiftOutlined />{" "}
-                  {isMobile ? currentUi.spinMobile : currentUi.spinDesktop} 🎡
-                </Button>
-              </div>
+              <Button
+                danger
+                size={isMobile ? "middle" : "large"}
+                onClick={handleEndSession}
+                style={{
+                  borderRadius: 30,
+                  height: isMobile ? 44 : 48,
+                  padding: isMobile ? "0 24px" : "0 32px",
+                  fontWeight: "bold",
+                  fontSize: isMobile ? 14 : 16,
+                  background: "linear-gradient(135deg, #ff4d4f, #cf1322)",
+                  border: "none",
+                  boxShadow: "0 15px 30px rgba(207,19,34,0.3)",
+                  transition: "all 0.3s ease",
+                  width: isMobile ? "100%" : "auto",
+                  touchAction: "manipulation",
+                }}
+                onTouchStart={(e) => {
+                  if (isMobile) {
+                    e.currentTarget.style.transform = "scale(0.95)";
+                  }
+                }}
+                onTouchEnd={(e) => {
+                  if (isMobile) {
+                    e.currentTarget.style.transform = "scale(1)";
+                  }
+                }}
+                onMouseEnter={(e) => {
+                  if (!isMobile) {
+                    e.currentTarget.style.transform =
+                      "translateY(-3px) scale(1.02)";
+                    e.currentTarget.style.boxShadow =
+                      "0 20px 40px rgba(207,19,34,0.4)";
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (!isMobile) {
+                    e.currentTarget.style.transform = "translateY(0) scale(1)";
+                    e.currentTarget.style.boxShadow =
+                      "0 15px 30px rgba(207,19,34,0.3)";
+                  }
+                }}
+              >
+                {isMobile
+                  ? currentUi.endSessionMobile
+                  : currentUi.endSessionDesktop}
+              </Button>
             </Card>
           </div>
-        )}
-
-        <div
-          className="games-card-animate"
-          style={{
-            textAlign: "center",
-            marginTop: isMobile ? 30 : 40,
-            marginBottom: isMobile ? 20 : 40,
-            animationDelay: `${(data.length + 1) * 0.12 + 0.3}s`,
-            padding: isMobile ? "0 10px" : 0,
-          }}
-        >
-          <Card
-            style={{
-              maxWidth: isMobile ? "100%" : 450,
-              margin: "0 auto",
-              borderRadius: isMobile ? 20 : 30,
-              border: "2px dashed #ff4d4f",
-              background: "linear-gradient(135deg, #FFF1F0, #FFE6E6)",
-              boxShadow: "0 20px 40px rgba(255,77,79,0.2)",
-              backdropFilter: "blur(5px)",
-            }}
-            bodyStyle={{ padding: isMobile ? 20 : 24 }}
-          >
-            <h3
-              style={{
-                color: "#a8071a",
-                fontSize: isMobile ? 20 : 22,
-                fontWeight: 800,
-                marginBottom: isMobile ? 8 : 12,
-              }}
-            >
-              🛑 {isMobile ? currentUi.sessionMobile : currentUi.sessionDesktop}
-            </h3>
-
-            <p
-              style={{
-                color: "#555",
-                marginBottom: isMobile ? 16 : 20,
-                fontSize: isMobile ? 14 : 16,
-              }}
-            >
-              {isMobile
-                ? currentUi.sessionDescMobile
-                : currentUi.sessionDescDesktop}
-            </p>
-
-            <Button
-              danger
-              size={isMobile ? "middle" : "large"}
-              onClick={handleEndSession}
-              style={{
-                borderRadius: 30,
-                height: isMobile ? 44 : 48,
-                padding: isMobile ? "0 24px" : "0 32px",
-                fontWeight: "bold",
-                fontSize: isMobile ? 14 : 16,
-                background: "linear-gradient(135deg, #ff4d4f, #cf1322)",
-                border: "none",
-                boxShadow: "0 15px 30px rgba(207,19,34,0.3)",
-                transition: "all 0.3s ease",
-                width: isMobile ? "100%" : "auto",
-                touchAction: "manipulation",
-              }}
-              onTouchStart={(e) => {
-                if (isMobile) {
-                  e.currentTarget.style.transform = "scale(0.95)";
-                }
-              }}
-              onTouchEnd={(e) => {
-                if (isMobile) {
-                  e.currentTarget.style.transform = "scale(1)";
-                }
-              }}
-              onMouseEnter={(e) => {
-                if (!isMobile) {
-                  e.currentTarget.style.transform =
-                    "translateY(-3px) scale(1.02)";
-                  e.currentTarget.style.boxShadow =
-                    "0 20px 40px rgba(207,19,34,0.4)";
-                }
-              }}
-              onMouseLeave={(e) => {
-                if (!isMobile) {
-                  e.currentTarget.style.transform = "translateY(0) scale(1)";
-                  e.currentTarget.style.boxShadow =
-                    "0 15px 30px rgba(207,19,34,0.3)";
-                }
-              }}
-            >
-              {isMobile
-                ? currentUi.endSessionMobile
-                : currentUi.endSessionDesktop}
-            </Button>
-          </Card>
         </div>
       </div>
-
-      <BonusSpinModal open={showBonus} onClose={() => setShowBonus(false)} />
-    </div>
+      <BonusSpinModal
+        open={showBonus}
+        player={player}
+        onClose={() => setShowBonus(false)}
+      />
+    </>
   );
 }
 

@@ -37,7 +37,8 @@ export default function RabanaGame({ player }) {
       timeLeft: "ඉතිරි වේලාව",
       score: "ලකුණු",
       combo: "Combo",
-      tapFast: "ඉක්මනින් තට්ටු කර ලකුණු ලබාගන්න!",  goHome: "මුල් පිටුවට යන්න",
+      tapFast: "ඉක්මනින් තට්ටු කර ලකුණු ලබාගන්න!",
+      goHome: "මුල් පිටුවට යන්න",
       comboBonus: "bonus",
       timeUp: "කාලය අවසන්!",
       finalScore: "ඔබගේ අවසන් ලකුණු",
@@ -52,7 +53,8 @@ export default function RabanaGame({ player }) {
       subtitle:
         "கொடுக்கப்பட்ட நேரத்தில் தொடர்ந்து ரபானாவை தட்டி அதிக மதிப்பெண் பெற்று பரிசுகளை வெல்லுங்கள்.",
       readyTitle: "வாசிக்க தயாரா?",
-      readyDesc: "நேரம் முடிவதற்கு முன் முடிந்தவரை வேகமாக ரபானாவை தட்டுங்கள்", goHome: "முகப்பு பக்கத்துக்கு செல்லவும்",
+      readyDesc: "நேரம் முடிவதற்கு முன் முடிந்தவரை வேகமாக ரபானாவை தட்டுங்கள்",
+      goHome: "முகப்பு பக்கத்துக்கு செல்லவும்",
       startGame: "விளையாட்டை தொடங்கவும்",
       countdownTitle: "தொடங்க இன்னும் விநாடிகள்",
       countdownDesc: "முடிந்தவரை வேகமாக தட்ட தயாராகுங்கள்!",
@@ -309,9 +311,23 @@ export default function RabanaGame({ player }) {
         language,
       });
 
-      if (res) {
-        localStorage.setItem("game_rabana_done", "true");
+      if (res?.success) {
+        // ✅ Get existing progress
+        const existing = JSON.parse(
+          localStorage.getItem("gamesPlayed") || "{}",
+        );
+
+        // ✅ Update Rabana
+        existing["rabana"] = {
+          completed: true,
+          score: score,
+          completedAt: new Date().toISOString(),
+        };
+
+        // ✅ Save back
+        localStorage.setItem("gamesPlayed", JSON.stringify(existing));
       }
+
       setFinished(true);
       setShowModal(true);
     } catch (err) {
@@ -369,17 +385,43 @@ export default function RabanaGame({ player }) {
     return () => clearTimeout(timer);
   }, [countdown, startClicked]);
 
-  const restartGame = () => {
-    setScore(0);
-    setFinished(false);
-    setStartClicked(false);
-    setCountdown(3);
-    setGameStarted(false);
-    setAnimate(false);
-    setLastTap(0);
-    setCheckingUser(false);
-    setCombo(0);
-    setParticles([]);
+  const handleNext = () => {
+    const progress = JSON.parse(localStorage.getItem("gamesPlayed") || "{}");
+
+    const keyMap = {
+      game_quiz_done: "quiz",
+      game_kavum_done: "kavum_count",
+      game_lamps_done: "hidden_lamps",
+      game_rabana_done: "rabana",
+      game_catch_kavum_done: "catch_kavum",
+      game_break_pot_done: "break_pot",
+    };
+
+    const gamesFlow = [
+      { key: "game_quiz_done", route: "/game1" },
+      { key: "game_kavum_done", route: "/game2" },
+      { key: "game_lamps_done", route: "/game3" },
+      { key: "game_rabana_done", route: "/rabana" },
+      { key: "game_catch_kavum_done", route: "/kavum" },
+      { key: "game_break_pot_done", route: "/break" },
+    ];
+
+    for (let game of gamesFlow) {
+      const cleanKey = keyMap[game.key];
+      const isDone = progress?.[cleanKey]?.completed;
+
+      if (!isDone) {
+        navigate(game.route); // ✅ go next game
+        return;
+      }
+    }
+
+    // ✅ all completed
+    console.log(progress);
+
+    // ✅ all completed
+       navigate("/"); // or show bonus modal
+
   };
 
   const beatBars = [];
@@ -965,35 +1007,49 @@ export default function RabanaGame({ player }) {
                     </div>
                   )}
                 </div>
-
-         
-                 <Button
-                  onClick={() => {
-                    navigate("/");
-                  }}
+                <div
                   style={{
-                    height: 48,
-                    padding: "0 32px",
-                    borderRadius: 30,
-                    fontWeight: 700,
-                    fontSize: 16,
-                    background: "linear-gradient(135deg, #27AE60, #2ECC71)",
-                    border: "none",
-                    boxShadow: "0 10px 20px rgba(39,174,96,0.3)",
-                    transition: "all 0.3s ease",
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.transform = "translateY(-2px)";
-                    e.currentTarget.style.boxShadow =
-                      "0 10px 20px rgba(255,215,0,0.3)";
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.transform = "translateY(0)";
-                    e.currentTarget.style.boxShadow = "none";
+                    display: "flex",
+                    gap: 12,
+                    marginTop: 24,
+                    flexWrap: "wrap",
+                    justifyContent: "space-between",
                   }}
                 >
-                  {t.goHome}
-                </Button>
+                  <Button
+                    onClick={() => navigate("/")}
+                    style={{
+                      height: 48,
+                      padding: "0 32px",
+                      borderRadius: 30,
+                      fontWeight: 700,
+                      fontSize: 16,
+                      background: "linear-gradient(135deg, #1677ff, #4096ff)", // 🔵 BLUE
+                      border: "none",
+                      color: "white",
+                      boxShadow: "0 10px 20px rgba(22,119,255,0.3)",
+                    }}
+                  >
+                    {t.goHome}
+                  </Button>
+
+                  <Button
+                    onClick={() => handleNext()}
+                    style={{
+                      height: 48,
+                      padding: "0 32px",
+                      borderRadius: 30,
+                      fontWeight: 700,
+                      fontSize: 16,
+                      background: "linear-gradient(135deg, #27AE60, #2ECC71)", // 🟢 GREEN (primary)
+                      border: "none",
+                      color: "white",
+                      boxShadow: "0 10px 20px rgba(39,174,96,0.3)",
+                    }}
+                  >
+                    Next Question
+                  </Button>
+                </div>
               </motion.div>
             )}
           </AnimatePresence>
