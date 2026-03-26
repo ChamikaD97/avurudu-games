@@ -21,6 +21,8 @@ import {
 } from "@ant-design/icons";
 import { getSpinResultsFiltered, saveGameSummary } from "../api/gameApi";
 import { motion } from "framer-motion";
+import BonusCard from "../components/BonusCard";
+import FinalRewardModal from "../components/FinalRewardModal";
 
 export default function GamesHome({ player }) {
   const navigate = useNavigate();
@@ -44,6 +46,7 @@ export default function GamesHome({ player }) {
     { key: "catch_kavum", name: "Catch Kavum" },
     { key: "break_pot", name: "Break Pot" },
   ];
+  const [finalRewardModal, setFinalRewardModal] = useState(false);
 
   useEffect(() => {
     // ✅ get unified storage
@@ -86,8 +89,11 @@ export default function GamesHome({ player }) {
     console.log(data);
 
     if (data && data.length > 0) {
+      console.log(" ✅ user already played");
+
       setAlreadyPlayed(true); // ✅ user already played
     } else {
+      console.log(" ✅ user not played");
       setAlreadyPlayed(false); // ✅ user not played
     }
   };
@@ -390,9 +396,10 @@ export default function GamesHome({ player }) {
   useEffect(() => {
     if (allGamesDone) {
       sendSummary();
+      setFinalRewardModal(true);
     }
     getSummery();
-  }, [allGamesDone]);
+  }, [allGamesDone, showBonus]);
 
   // Inject enhanced animations (keeping your existing animations)
   useEffect(() => {
@@ -401,6 +408,7 @@ export default function GamesHome({ player }) {
 
     const style = document.createElement("style");
     style.id = styleId;
+
     style.innerHTML = `
       @keyframes floatIn {
         0% {
@@ -598,10 +606,12 @@ export default function GamesHome({ player }) {
     localStorage.removeItem("player");
     localStorage.removeItem("bonus_reward");
     localStorage.removeItem("gamesPlayed");
+
+    localStorage.removeItem("spinPrize");
     setActiveGame(null);
     setCompletedGames({});
     setShowBonus(false);
-
+    setAlreadyPlayed(false);
     message.success({
       content: currentUi.sessionEnded,
       duration: 2,
@@ -1048,125 +1058,15 @@ export default function GamesHome({ player }) {
             }}
           />
 
-          {alreadyPlayed && allGamesDone && (
-            <div
-              className="games-card-animate"
-              style={{
-                textAlign: "center",
-                marginTop: isMobile ? 30 : 40,
-                padding: isMobile ? "0 10px" : 0,
-                animationDelay: `${(data.length + 0.5) * 0.12}s`,
-              }}
-            >
-              <Card
-                className="games-home-card"
-                style={{
-                  maxWidth: isMobile ? "100%" : 500,
-                  margin: "0 auto",
-                  borderRadius: isMobile ? 20 : 30,
-                  border: "2px solid rgba(255, 215, 0, 0.3)",
-                  background: "linear-gradient(135deg, #FFF9E6, #FFE4B5)",
-                  boxShadow: "0 25px 45px rgba(255,215,0,0.25)",
-                  position: "relative",
-                  overflow: "hidden",
-                }}
-                bodyStyle={{ padding: isMobile ? 20 : 32 }}
-              >
-                {/* ✨ DECORATION */}
-                <div
-                  style={{
-                    position: "absolute",
-                    top: -50,
-                    left: -50,
-                    width: 100,
-                    height: 100,
-                    background:
-                      "radial-gradient(circle, rgba(255,215,0,0.3) 0%, transparent 70%)",
-                    borderRadius: "50%",
-                    animation: "spinSlow 10s linear infinite",
-                  }}
-                />
-
-                <div style={{ position: "relative", zIndex: 2 }}>
-                  {/* ICON */}
-                  <div
-                    style={{
-                      fontSize: isMobile ? 48 : 64,
-                      marginBottom: 12,
-                      animation: "gentleFloat 2s ease-in-out infinite",
-                    }}
-                  >
-                    🎡
-                  </div>
-
-                  {/* TITLE */}
-                  <h2
-                    style={{
-                      color: "#8B4513",
-                      fontSize: isMobile ? 24 : 32,
-                      fontWeight: 800,
-                      marginBottom: 10,
-                    }}
-                  >
-                    Spin Completed!
-                  </h2>
-
-                  {/* MESSAGE */}
-                  <p
-                    style={{
-                      color: "#D2691E",
-                      fontSize: isMobile ? 14 : 16,
-                      marginBottom: 20,
-                    }}
-                  >
-                    🎉 You’ve already used your lucky spin today.
-                    <br />
-                    Come back tomorrow for another chance 🎁
-                  </p>
-
-                  {/* BADGES (REUSING YOUR STYLE) */}
-                  <div
-                    style={{
-                      display: "flex",
-                      justifyContent: "center",
-                      gap: 12,
-                      flexWrap: "wrap",
-                      marginBottom: 20,
-                    }}
-                  >
-                    <div style={styles.rewardBadge}>
-                      <span style={{ marginRight: 6 }}>🎯</span>
-                      Spin Used
-                    </div>
-
-                    <div style={styles.rewardBadge}>
-                      <span style={{ marginRight: 6 }}>⏳</span>
-                      Next Tomorrow
-                    </div>
-                  </div>
-
-                  {/* STATUS BUTTON STYLE */}
-                  <Button
-                    disabled
-                    style={{
-                      borderRadius: 40,
-                      height: isMobile ? 48 : 54,
-                      padding: isMobile ? "0 24px" : "0 40px",
-                      fontSize: isMobile ? 16 : 18,
-                      fontWeight: "bold",
-                      background: "#d9d9d9",
-                      color: "#8c8c8c",
-                      border: "none",
-                      width: isMobile ? "100%" : "auto",
-                      cursor: "not-allowed",
-                    }}
-                  >
-                    🚫 Already Played
-                  </Button>
-                </div>
-              </Card>
-            </div>
+          {allGamesDone && (
+            <BonusCard
+              type={alreadyPlayed ? "USED" : "AVAILABLE"}
+              isMobile={isMobile}
+              currentUi={currentUi}
+              onSpin={() => setShowBonus(true)}
+            />
           )}
+
           <div
             className="games-card-animate"
             style={{
@@ -1268,6 +1168,12 @@ export default function GamesHome({ player }) {
         open={showBonus}
         player={player}
         onClose={() => setShowBonus(false)}
+      />
+      <FinalRewardModal
+        open={finalRewardModal}
+        alreadyPlayed={alreadyPlayed}
+        onClose={() => setFinalRewardModal(false)}
+        onSpin={() => setShowBonus(true)}
       />
     </>
   );

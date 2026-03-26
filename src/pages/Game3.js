@@ -14,6 +14,7 @@ import WINWAYLogo from "../assets/WIN WAY English Logo- PNG.png";
 import AwuruduGames from "../assets/Aluth Awurudu Games.png";
 // API
 import { submitHiddenLampsGame } from "../api/gameApi";
+import NextQuestionLoader from "../components/NextQuestionLoader";
 
 export default function Game3({ player }) {
   const navigate = useNavigate();
@@ -30,6 +31,7 @@ export default function Game3({ player }) {
   const [finished, setFinished] = useState(false);
   const [isCorrect, setIsCorrect] = useState(false);
   const [timeTaken, setTimeTaken] = useState("0.00");
+  const [loadingNext, setLoadingNext] = useState(false);
 
   const text = {
     si: {
@@ -224,7 +226,6 @@ export default function Game3({ player }) {
       isCorrect: answerCorrect,
       score,
       time: totalTime,
-      language,
     };
 
     try {
@@ -253,7 +254,12 @@ export default function Game3({ player }) {
     } catch (err) {
       console.log("Save failed");
     }
-
+      setTimeout(() => {
+        setLoadingNext(true);
+      }, 6000);
+      setTimeout(() => {
+        handleNext();
+      }, 10000);
     setIsCorrect(answerCorrect);
     setTimeTaken(totalTime);
     setFinished(true);
@@ -286,7 +292,6 @@ export default function Game3({ player }) {
       { key: "game_break_pot_done", route: "/break" },
     ];
 
-    
     for (let game of gamesFlow) {
       const cleanKey = keyMap[game.key];
       const isDone = progress?.[cleanKey]?.completed;
@@ -301,8 +306,9 @@ export default function Game3({ player }) {
     console.log(progress);
 
     // ✅ all completed
-       navigate("/"); // or show bonus modal
+    setLoadingNext(false);
 
+    navigate("/"); // or show bonus modal
   };
   return (
     <div
@@ -510,7 +516,10 @@ export default function Game3({ player }) {
               {t.title}
             </h2>
           </div>
-
+          <NextQuestionLoader
+            visible={loadingNext}
+            text="Next question loading..."
+          />
           {!finished ? (
             <>
               <motion.div
@@ -807,7 +816,7 @@ export default function Game3({ player }) {
                       </div>
                     </div>
                   )}
-
+{/* 
                   <div
                     style={{
                       display: "flex",
@@ -850,7 +859,7 @@ export default function Game3({ player }) {
                     >
                       Next Question
                     </Button>
-                  </div>
+                  </div> */}
                 </div>
               </motion.div>
             </AnimatePresence>

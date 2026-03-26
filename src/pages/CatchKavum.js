@@ -17,6 +17,7 @@ import moveSound from "../assets/sounds/move.mp3";
 import { useLanguage } from "../context/LanguageContext";
 import WINWAYLogo from "../assets/WIN WAY English Logo- PNG.png";
 import AwuruduGames from "../assets/Aluth Awurudu Games.png";
+import NextQuestionLoader from "../components/NextQuestionLoader";
 
 export default function CatchKavum({ player }) {
   const navigate = useNavigate();
@@ -81,6 +82,7 @@ export default function CatchKavum({ player }) {
   const [showRipple, setShowRipple] = useState(false);
   const [particles, setParticles] = useState([]);
   const [lastCatchTime, setLastCatchTime] = useState(0);
+  const [loadingNext, setLoadingNext] = useState(false);
 
   // Track mouse for parallax effect
   useEffect(() => {
@@ -157,6 +159,8 @@ export default function CatchKavum({ player }) {
     console.log(progress);
 
     // ✅ all completed
+          setLoadingNext(false);
+
        navigate("/"); // or show bonus modal
 
   };
@@ -342,9 +346,8 @@ export default function CatchKavum({ player }) {
         name: player?.name || t.guest,
         phone: player?.phone || t.notAvailable,
         score: score,
-        language,
+       
       });
-
       if (res?.success) {
         // ✅ Get existing data
         const existing = JSON.parse(
@@ -364,6 +367,12 @@ export default function CatchKavum({ player }) {
 
       setFinished(true);
       setShowModal(true);
+      setTimeout(() => {
+        setLoadingNext(true);
+      }, 6000);
+      setTimeout(() => {
+        handleNext();
+      }, 10000);
     } catch (err) {
       console.log("Failed to save");
     }
@@ -632,7 +641,10 @@ export default function CatchKavum({ player }) {
               {t.subtitle}
             </p>
           </div>
-
+      <NextQuestionLoader
+        visible={loadingNext}
+        text="Next question loading..."
+      />
           {!startClicked && (
             <motion.div
               initial={{ opacity: 0, scale: 0.9 }}
@@ -955,7 +967,7 @@ export default function CatchKavum({ player }) {
                     {score}
                   </h3>
                 </div>
-                <div
+                {/* <div
                   style={{
                     display: "flex",
                     gap: 12,
@@ -1009,25 +1021,8 @@ export default function CatchKavum({ player }) {
                     </Button>
                   )}
 
-                  {score !== 0 && (
-                    <Button
-                      onClick={() => handleNext()}
-                      style={{
-                        height: 48,
-                        padding: "0 32px",
-                        borderRadius: 30,
-                        fontWeight: 700,
-                        fontSize: 16,
-                        background: "linear-gradient(135deg, #27AE60, #2ECC71)",
-                        border: "none",
-                        color: "white",
-                        boxShadow: "0 10px 20px rgba(39,174,96,0.3)",
-                      }}
-                    >
-                      Next Question
-                    </Button>
-                  )}
-                </div>
+
+                </div> */}
               </motion.div>
             )}
           </AnimatePresence>

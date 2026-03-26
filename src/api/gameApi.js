@@ -174,7 +174,7 @@ export const playSpin = async (payload) => {
 // optional (if you want config from backend)
 export const getSpinConfig = async () => {
   try {
-    const res = await axios.get(`${API_BASE}/spin-config`);
+    const res = await axios.get(`${PLAYER_API_BASE}/spin-config`);
     return res.data;
   } catch (err) {
     console.error(err);

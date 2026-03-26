@@ -13,6 +13,8 @@ import { submitQuizGame } from "../api/gameApi";
 import { useLanguage } from "../context/LanguageContext";
 import AwuruduGames from "../assets/Aluth Awurudu Games.png";
 import { getNextGameRoute } from "../utils/gameFlow.js"; // or same file
+import GameCountdown from "../components/GameCountdown.js";
+import NextQuestionLoader from "../components/NextQuestionLoader.js";
 
 export default function Game1({ player }) {
   const navigate = useNavigate();
@@ -274,7 +276,6 @@ export default function Game1({ player }) {
       time: totalTime,
       totalQuestions: questions.length,
       answers: finalAnswers,
-      language,
     };
 
     try {
@@ -298,8 +299,14 @@ export default function Game1({ player }) {
         // ✅ Save back
         localStorage.setItem("gamesPlayed", JSON.stringify(existing));
       }
-
+      setCountdownStart(true);
       console.log("Saved");
+      setTimeout(() => {
+        setLoadingNext(true);
+      }, 10000);
+      setTimeout(() => {
+        handleNext();
+      }, 16000);
     } catch (err) {
       console.log("Save failed");
     }
@@ -334,13 +341,12 @@ export default function Game1({ player }) {
         return;
       }
     }
-
+    setLoadingNext(false);
     // ✅ all completed
     console.log(progress);
 
     // ✅ all completed
-       navigate("/"); // or show bonus modal
-
+    navigate("/"); // or show bonus modal
   };
 
   const handleBack = () => {
@@ -355,10 +361,12 @@ export default function Game1({ player }) {
       navigate("/");
     }
   };
-
+  const [startClicked, setStartClicked] = useState(false);
+  const [countdownStart, setCountdownStart] = useState(false);
+  const [gameStarted, setGameStarted] = useState(false);
   const q = questions[current];
   const progress = finished ? 100 : ((current + 1) / questions.length) * 100;
-
+  const [loadingNext, setLoadingNext] = useState(false);
   return (
     <div
       ref={containerRef}
@@ -394,7 +402,10 @@ export default function Game1({ player }) {
           pointerEvents: "none",
         }}
       />
-
+      <NextQuestionLoader
+        visible={loadingNext}
+        text="Next question loading..."
+      />
       <div
         className="floating-element"
         style={{
@@ -855,7 +866,7 @@ export default function Game1({ player }) {
                       ))}
                     </div>
                   </div>
-                  <div
+                  {/* <div
                     style={{
                       display: "flex",
                       gap: 12,
@@ -897,7 +908,7 @@ export default function Game1({ player }) {
                     >
                       Next Question
                     </Button>
-                  </div>
+                  </div> */}
                 </div>
               </motion.div>
             </AnimatePresence>

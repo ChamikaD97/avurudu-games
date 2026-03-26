@@ -19,6 +19,7 @@ import { submitRabanaGame } from "../api/gameApi";
 import { useLanguage } from "../context/LanguageContext";
 import WINWAYLogo from "../assets/WIN WAY English Logo- PNG.png";
 import AwuruduGames from "../assets/Aluth Awurudu Games.png";
+import NextQuestionLoader from "../components/NextQuestionLoader";
 export default function RabanaGame({ player }) {
   const navigate = useNavigate();
   const { language } = useLanguage();
@@ -89,6 +90,7 @@ export default function RabanaGame({ player }) {
   const [ripple, setRipple] = useState({ show: false, x: 0, y: 0 });
   const [combo, setCombo] = useState(0);
   const [particles, setParticles] = useState([]);
+  const [loadingNext, setLoadingNext] = useState(false);
 
   const audioRef = useRef(null);
 
@@ -308,7 +310,6 @@ export default function RabanaGame({ player }) {
         name: player?.name || t.guest,
         phone: player?.phone || t.notAvailable,
         score: score,
-        language,
       });
 
       if (res?.success) {
@@ -327,7 +328,12 @@ export default function RabanaGame({ player }) {
         // ✅ Save back
         localStorage.setItem("gamesPlayed", JSON.stringify(existing));
       }
-
+      setTimeout(() => {
+        setLoadingNext(true);
+      }, 6000);
+      setTimeout(() => {
+        handleNext();
+      }, 10000);
       setFinished(true);
       setShowModal(true);
     } catch (err) {
@@ -417,11 +423,12 @@ export default function RabanaGame({ player }) {
     }
 
     // ✅ all completed
+    setLoadingNext(false);
+
     console.log(progress);
 
     // ✅ all completed
-       navigate("/"); // or show bonus modal
-
+    navigate("/"); // or show bonus modal
   };
 
   const beatBars = [];
@@ -714,7 +721,10 @@ export default function RabanaGame({ player }) {
               </Button>
             </motion.div>
           )}
-
+          <NextQuestionLoader
+            visible={loadingNext}
+            text="Next question loading..."
+          />
           {startClicked && !gameStarted && (
             <motion.div
               initial={{ opacity: 0, scale: 0.9 }}
@@ -1007,49 +1017,7 @@ export default function RabanaGame({ player }) {
                     </div>
                   )}
                 </div>
-                <div
-                  style={{
-                    display: "flex",
-                    gap: 12,
-                    marginTop: 24,
-                    flexWrap: "wrap",
-                    justifyContent: "space-between",
-                  }}
-                >
-                  <Button
-                    onClick={() => navigate("/")}
-                    style={{
-                      height: 48,
-                      padding: "0 32px",
-                      borderRadius: 30,
-                      fontWeight: 700,
-                      fontSize: 16,
-                      background: "linear-gradient(135deg, #1677ff, #4096ff)", // 🔵 BLUE
-                      border: "none",
-                      color: "white",
-                      boxShadow: "0 10px 20px rgba(22,119,255,0.3)",
-                    }}
-                  >
-                    {t.goHome}
-                  </Button>
-
-                  <Button
-                    onClick={() => handleNext()}
-                    style={{
-                      height: 48,
-                      padding: "0 32px",
-                      borderRadius: 30,
-                      fontWeight: 700,
-                      fontSize: 16,
-                      background: "linear-gradient(135deg, #27AE60, #2ECC71)", // 🟢 GREEN (primary)
-                      border: "none",
-                      color: "white",
-                      boxShadow: "0 10px 20px rgba(39,174,96,0.3)",
-                    }}
-                  >
-                    Next Question
-                  </Button>
-                </div>
+         
               </motion.div>
             )}
           </AnimatePresence>

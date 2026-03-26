@@ -21,6 +21,7 @@ import { submitBreakPotGame } from "../api/gameApi";
 import { useLanguage } from "../context/LanguageContext";
 import WINWAYLogo from "../assets/WIN WAY English Logo- PNG.png";
 import AwuruduGames from "../assets/Aluth Awurudu Games.png";
+import NextQuestionLoader from "../components/NextQuestionLoader";
 
 export default function BreakPot({ player }) {
   const navigate = useNavigate();
@@ -90,6 +91,7 @@ export default function BreakPot({ player }) {
   const [showRipple, setShowRipple] = useState(false);
   const [particles, setParticles] = useState([]);
   const [crackLevel, setCrackLevel] = useState(0);
+  const [loadingNext, setLoadingNext] = useState(false);
 
   const hitAudioRef = useRef(null);
   const breakAudioRef = useRef(null);
@@ -132,8 +134,9 @@ export default function BreakPot({ player }) {
     console.log(progress);
 
     // ✅ all completed
-       navigate("/"); // or show bonus modal
+    setLoadingNext(false);
 
+    navigate("/"); // or show bonus modal
   };
 
   useEffect(() => {
@@ -343,7 +346,6 @@ export default function BreakPot({ player }) {
         score: finishTime,
         time: finishTime,
         finalTime: finishTime,
-        language,
       });
 
       if (res?.success) {
@@ -363,6 +365,13 @@ export default function BreakPot({ player }) {
         // ✅ Save back
         localStorage.setItem("gamesPlayed", JSON.stringify(existing));
       }
+
+      setTimeout(() => {
+        setLoadingNext(true);
+      }, 6000);
+      setTimeout(() => {
+        handleNext();
+      }, 10000);
     } catch (err) {
       console.log("Failed to save", err);
     }
@@ -672,7 +681,10 @@ export default function BreakPot({ player }) {
               {t.subtitle}
             </p>
           </div>
-
+          <NextQuestionLoader
+            visible={loadingNext}
+            text="Next question loading..."
+          />
           {!startClicked && (
             <motion.div
               initial={{ opacity: 0, scale: 0.9 }}
@@ -1044,39 +1056,8 @@ export default function BreakPot({ player }) {
                     justifyContent: "space-between",
                   }}
                 >
-                  <Button
-                    onClick={() => navigate("/")}
-                    style={{
-                      height: 48,
-                      padding: "0 32px",
-                      borderRadius: 30,
-                      fontWeight: 700,
-                      fontSize: 16,
-                      background: "linear-gradient(135deg, #1677ff, #4096ff)", // 🔵 BLUE
-                      border: "none",
-                      color: "white",
-                      boxShadow: "0 10px 20px rgba(22,119,255,0.3)",
-                    }}
-                  >
-                    {t.goHome}
-                  </Button>
 
-                  <Button
-                    onClick={() => handleNext()}
-                    style={{
-                      height: 48,
-                      padding: "0 32px",
-                      borderRadius: 30,
-                      fontWeight: 700,
-                      fontSize: 16,
-                      background: "linear-gradient(135deg, #27AE60, #2ECC71)", // 🟢 GREEN (primary)
-                      border: "none",
-                      color: "white",
-                      boxShadow: "0 10px 20px rgba(39,174,96,0.3)",
-                    }}
-                  >
-                    Next Question
-                  </Button>
+
                 </div>
               </motion.div>
             )}

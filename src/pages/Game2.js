@@ -14,6 +14,7 @@ import WINWAYLogo from "../assets/WIN WAY English Logo- PNG.png";
 import AwuruduGames from "../assets/Aluth Awurudu Games.png";
 // API
 import { submitKavumCountGame } from "../api/gameApi";
+import NextQuestionLoader from "../components/NextQuestionLoader";
 
 export default function Game2({ player }) {
   const navigate = useNavigate();
@@ -23,6 +24,7 @@ export default function Game2({ player }) {
   const [animateIn, setAnimateIn] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [imageHover, setImageHover] = useState(false);
+  const [loadingNext, setLoadingNext] = useState(false);
 
   const [finished, setFinished] = useState(false);
   const [isCorrect, setIsCorrect] = useState(false);
@@ -61,10 +63,10 @@ export default function Game2({ player }) {
 
     // ✅ all completed
     console.log(progress);
+    setLoadingNext(false);
 
     // ✅ all completed
-       navigate("/"); // or show bonus modal
-
+    navigate("/"); // or show bonus modal
   };
 
   const text = {
@@ -255,7 +257,6 @@ export default function Game2({ player }) {
       isCorrect: answerCorrect,
       score,
       time: totalTime,
-      language,
     };
 
     try {
@@ -284,7 +285,12 @@ export default function Game2({ player }) {
     } catch (err) {
       console.log("Save failed");
     }
-
+      setTimeout(() => {
+        setLoadingNext(true);
+      }, 6000);
+      setTimeout(() => {
+        handleNext();
+      }, 10000);
     setIsCorrect(answerCorrect);
     setFinalScore(score);
     setTimeTaken(totalTime);
@@ -508,7 +514,10 @@ export default function Game2({ player }) {
               {t.title}
             </h2>
           </div>
-
+          <NextQuestionLoader
+            visible={loadingNext}
+            text="Next question loading..."
+          />
           {!finished ? (
             <>
               <motion.div
@@ -807,7 +816,7 @@ export default function Game2({ player }) {
                     </div>
                   )}
 
-                  <div
+                  {/* <div
                     style={{
                       display: "flex",
                       gap: 12,
@@ -848,7 +857,7 @@ export default function Game2({ player }) {
                     >
                       Next Question
                     </Button>
-                  </div>
+                  </div> */}
                 </div>
               </motion.div>
             </AnimatePresence>

@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useRef, useState } from "react";
 import bgMusic from "../assets/sounds/bg-music.mp3";
 
+
 const AudioContext = createContext(null);
 
 export function AudioProvider({ children }) {
